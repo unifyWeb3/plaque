@@ -183,6 +183,6 @@ competitor map (names deliberately not recorded): `state/RESEARCH.md`. Name avai
 | The tests shared one sponsor wallet and hit ganache nonce races | Fixed: every test gets its own funded sponsor; the suite now passes twice in a row with exit 0 |
 | The UI showed "0.0004 tPOT per write", a figure measured from nothing | Corrected to ≈0.01 tPOT, measured from live receipts |
 | The dashboard never fetched the chain when the input was empty, so the "empty registry" panel was showing stale state | Fixed: it always fetches, and the empty state is now a real state |
-| `NEXT_PUBLIC_PORTAldot_RPC` was a mixed-case variable name | Renamed to `NEXT_PUBLIC_PORTALDOT_RPC` |
+| The public RPC variable had a mixed-case name | Renamed to `NEXT_PUBLIC_PORTALDOT_RPC` |
 | The research notes named the profiles and the competitor repositories | Rewritten to describe them by function only; the sweep now enforces a general "no third-party handles" rule |
 | The `eth_call` dependency in the chain reader | Removed: the dashboard reads `eth_getStorageAt` + `eth_getLogs` and pins every read to a block |
