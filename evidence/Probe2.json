@@ -1,0 +1,76 @@
+{
+  "contractName": "Probe2",
+  "sourceName": "contracts/Probe2.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "number",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "timestamp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60808060405234601b5742600055436001556079908160218239f35b600080fdfe6080806040526004361015601257600080fd5b60003560e01c9081638381f58a146053575063b80777ea14603257600080fd5b34604e576000366003190112604e576020600054604051908152f35b600080fd5b34604e576000366003190112604e576020906001548152f3fea164736f6c634300081c000a",
+  "deployedBytecode": "0x6080806040526004361015601257600080fd5b60003560e01c9081638381f58a146053575063b80777ea14603257600080fd5b34604e576000366003190112604e576020600054604051908152f35b600080fd5b34604e576000366003190112604e576020906001548152f3fea164736f6c634300081c000a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.28+commit.7893614a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"number\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"timestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"title\":\"Probe2\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"notice\":\"Diagnostic contract: stores the EVM's block.timestamp (slot 0) and block.number         (slot 1). Deliberately avoids block.chainid: the first probe, which stored it,         reverted, which points at pallet-revive's CHAINID opcode on this runtime.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/hack/contracts/Probe2.sol\":\"Probe2\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[],\"viaIR\":true},\"sources\":{\"/root/hack/contracts/Probe2.sol\":{\"keccak256\":\"0x71ab515bf3cd8d79d793222887428fef18194ec53c8d004963c79ab3e4be4685\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0fd24afa23b45395e2bcbdff5fc88a1888ba78f6c297de9c1e275e8b0257ba3e\",\"dweb:/ipfs/QmPFnswUqsxgjhHYnKmXhX6ofaSQGZ5JG1zskbQqeXxSgi\"]}},\"version\":1}",
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 4,
+        "contract": "/root/hack/contracts/Probe2.sol:Probe2",
+        "label": "timestamp",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 6,
+        "contract": "/root/hack/contracts/Probe2.sol:Probe2",
+        "label": "number",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  },
+  "compiler": {
+    "name": "solc-js",
+    "version": "0.8.28+commit.7893614a.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 1
+    }
+  }
+}

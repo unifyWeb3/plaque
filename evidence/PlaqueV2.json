@@ -1,0 +1,179 @@
+{
+  "contractName": "PlaqueV2",
+  "sourceName": "contracts/PlaqueV2.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "BadSignature",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Unavailable",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sponsor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "gasPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "Claimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "Released",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "claim",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ownerOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        }
+      ],
+      "name": "release",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608080604052346015576102e5908161001b8239f35b600080fdfe608080604052600436101561001357600080fd5b60003560e01c9081631250ad96146101015750806367d42a8b1461007957637dd564111461004057600080fd5b34610074576020366003190112610074576004356000526000602052602060018060a01b0360406000205416604051908152f35b600080fd5b34610074576020366003190112610074576004356000818152602081905260409020546001600160a01b031633036100f057600081815260208190526040812080546001600160a01b03191690553391907f345362b837633de0469dca5c44bbd675927342809c833db95ef5fd9c284d34fe9080a3005b6330cd747160e01b60005260046000fd5b346100745760a036600319011261007457600435906024356001600160a01b03811691908290036100745760443560ff8116809103610074578315801561027f575b61026e578215610251576080600091836020809501906001825287604082015286606082015263190f1ca9848201523060a082015260a0815261018760c08261029f565b519020604051858101917b0ca2ba3432b932bab69029b4b3b732b21026b2b9b9b0b3b29d05199960211b8352603c820152603c81526101c7605c8261029f565b51902090604051918252848201526064356040820152608435606082015282805260015afa15610262576000516001600160a01b0316908103610251576000828152602081815260409182902080546001600160a01b0319168417905590513a81523393917f8b1927e0809f1e7682bb8c52fafe4c0445fea47afef60dd27e037e91fd104d2e91a4005b635cd5d23360e01b60005260046000fd5b6040513d6000823e3d90fd5b63a3b8915f60e01b60005260046000fd5b506000848152602081905260409020546001600160a01b03161515610143565b601f909101601f19168101906001600160401b038211908210176102c257604052565b634e487b7160e01b600052604160045260246000fdfea164736f6c634300081c000a",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b60003560e01c9081631250ad96146101015750806367d42a8b1461007957637dd564111461004057600080fd5b34610074576020366003190112610074576004356000526000602052602060018060a01b0360406000205416604051908152f35b600080fd5b34610074576020366003190112610074576004356000818152602081905260409020546001600160a01b031633036100f057600081815260208190526040812080546001600160a01b03191690553391907f345362b837633de0469dca5c44bbd675927342809c833db95ef5fd9c284d34fe9080a3005b6330cd747160e01b60005260046000fd5b346100745760a036600319011261007457600435906024356001600160a01b03811691908290036100745760443560ff8116809103610074578315801561027f575b61026e578215610251576080600091836020809501906001825287604082015286606082015263190f1ca9848201523060a082015260a0815261018760c08261029f565b519020604051858101917b0ca2ba3432b932bab69029b4b3b732b21026b2b9b9b0b3b29d05199960211b8352603c820152603c81526101c7605c8261029f565b51902090604051918252848201526064356040820152608435606082015282805260015afa15610262576000516001600160a01b0316908103610251576000828152602081815260409182902080546001600160a01b0319168417905590513a81523393917f8b1927e0809f1e7682bb8c52fafe4c0445fea47afef60dd27e037e91fd104d2e91a4005b635cd5d23360e01b60005260046000fd5b6040513d6000823e3d90fd5b63a3b8915f60e01b60005260046000fd5b506000848152602081905260409020546001600160a01b03161515610143565b601f909101601f19168101906001600160401b038211908210176102c257604052565b634e487b7160e01b600052604160045260246000fdfea164736f6c634300081c000a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.28+commit.7893614a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"BadSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotOwner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Unavailable\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sponsor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasPrice\",\"type\":\"uint256\"}],\"name\":\"Claimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"Released\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"claim\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"}],\"name\":\"release\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"events\":{\"Claimed(bytes32,address,address,uint256)\":{\"params\":{\"gasPrice\":\"the price per gas the sponsor paid.\",\"handle\":\"the 32-byte handle key.\",\"sponsor\":\"the address that submitted the claim and paid the gas.\",\"who\":\"the address that signed for the handle (the owner).\"}}},\"kind\":\"dev\",\"methods\":{\"claim(bytes32,address,uint8,bytes32,bytes32)\":{\"params\":{\"handle\":\"32-byte key: the UTF-8 handle, zero-padded.\",\"r\":\"EIP-191 signature component.\",\"s\":\"EIP-191 signature component.\",\"v\":\"EIP-191 signature component.\",\"who\":\"the address that is claiming the handle; it must be the address that signed.\"}}},\"stateVariables\":{\"CHAIN_ID\":{\"details\":\"The chain id of the Portaldot V3 testnet, as a constant: `block.chainid` is not      usable on this runtime.\"}},\"title\":\"PlaqueV2\",\"version\":1},\"userdoc\":{\"errors\":{\"BadSignature()\":[{\"notice\":\"The signature does not recover to the claimed address.\"}],\"NotOwner()\":[{\"notice\":\"The caller does not own the handle.\"}],\"Unavailable()\":[{\"notice\":\"The handle key is empty, or it already has an owner.\"}]},\"events\":{\"Claimed(bytes32,address,address,uint256)\":{\"notice\":\"Emitted when a handle is claimed.\"},\"Released(bytes32,address)\":{\"notice\":\"Emitted when the owner releases a handle so it can be claimed again.\"}},\"kind\":\"user\",\"methods\":{\"claim(bytes32,address,uint8,bytes32,bytes32)\":{\"notice\":\"Claim a handle for the address that signed the claim.\"},\"ownerOf(bytes32)\":{\"notice\":\"The address that currently owns a handle.\"},\"release(bytes32)\":{\"notice\":\"Release a handle so that it can be claimed again.\"}},\"notice\":\"Chain-compatible build of the Plaque handle registry for the Portaldot V3 testnet. The V3 runtime runs pallet-revive, and its BLOCK-family opcodes (CHAINID / TIMESTAMP / NUMBER) revert: a probe that stores `block.chainid` cannot even be deployed (see state/CHAIN-LIMITATION.md for the transactions). The first Plaque build used `block.chainid` inside the claim digest, so every claim reverted. This build removes every `block.*` dependency:   * the chain id is a compile-time constant in the digest,   * the signature window is enforced by the sponsor, because the contract cannot read a     clock on this runtime,   * the digest still binds the handle, the claimant, the chain id and this contract, so a     claim cannot be moved to another name, another address, another chain or another     contract. Storage layout, event shape and the refusal set are identical to Plaque.sol, so the SDK, the dashboard and the relayer work against either build.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/hack/contracts/PlaqueV2.sol\":\"PlaqueV2\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[],\"viaIR\":true},\"sources\":{\"/root/hack/contracts/PlaqueV2.sol\":{\"keccak256\":\"0x8b408ae1bb7054ccf8ec943b025b7e392c4f307d8046208093de75b4b1cec077\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a806ee444d9953ac808523ed15ab0bc6a2f507977101a40848b4d65ea62cd05d\",\"dweb:/ipfs/QmX8rr1Q4zJ2WYUombzx93iNsajbFmFFSurAKUgWTgfSRB\"]}},\"version\":1}",
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 11,
+        "contract": "/root/hack/contracts/PlaqueV2.sol:PlaqueV2",
+        "label": "ownerOf",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_bytes32,t_address)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_bytes32,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      }
+    }
+  },
+  "compiler": {
+    "name": "solc-js",
+    "version": "0.8.28+commit.7893614a.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 1
+    }
+  }
+}

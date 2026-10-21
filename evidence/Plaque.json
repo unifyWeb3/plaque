@@ -1,0 +1,189 @@
+{
+  "contractName": "Plaque",
+  "sourceName": "contracts/Plaque.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "BadSignature",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ClaimExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Unavailable",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sponsor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "gasPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "Claimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "Released",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint64",
+          "name": "validUntil",
+          "type": "uint64"
+        }
+      ],
+      "name": "claim",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ownerOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "handle",
+          "type": "bytes32"
+        }
+      ],
+      "name": "release",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60808060405234601557610312908161001b8239f35b600080fdfe6080604052600436101561001257600080fd5b60003560e01c806367d42a8b146102445780637dd56411146102105763d8c5eec91461003d57600080fd5b3461020b5760c036600319011261020b576004356024356001600160a01b0381169081900361020b5760443560ff811680910361020b5760a4356001600160401b038116919082900361020b57831580156101eb575b6101da5782156101ac578142116101c95760806000916020936040518581019160018352886040830152876060830152848201524660a08201523060c082015260c081526100e260e0826102cc565b519020604051858101917b0ca2ba3432b932bab69029b4b3b732b21026b2b9b9b0b3b29d05199960211b8352603c820152603c8152610122605c826102cc565b51902090604051918252848201526064356040820152608435606082015282805260015afa156101bd576000516001600160a01b03169081036101ac576000828152602081815260409182902080546001600160a01b0319168417905590513a81523393917f8b1927e0809f1e7682bb8c52fafe4c0445fea47afef60dd27e037e91fd104d2e91a4005b635cd5d23360e01b60005260046000fd5b6040513d6000823e3d90fd5b6341524ecf60e11b60005260046000fd5b63a3b8915f60e01b60005260046000fd5b506000848152602081905260409020546001600160a01b03161515610093565b600080fd5b3461020b57602036600319011261020b576004356000526000602052602060018060a01b0360406000205416604051908152f35b3461020b57602036600319011261020b576004356000818152602081905260409020546001600160a01b031633036102bb57600081815260208190526040812080546001600160a01b03191690553391907f345362b837633de0469dca5c44bbd675927342809c833db95ef5fd9c284d34fe9080a3005b6330cd747160e01b60005260046000fd5b601f909101601f19168101906001600160401b038211908210176102ef57604052565b634e487b7160e01b600052604160045260246000fdfea164736f6c634300081c000a",
+  "deployedBytecode": "0x6080604052600436101561001257600080fd5b60003560e01c806367d42a8b146102445780637dd56411146102105763d8c5eec91461003d57600080fd5b3461020b5760c036600319011261020b576004356024356001600160a01b0381169081900361020b5760443560ff811680910361020b5760a4356001600160401b038116919082900361020b57831580156101eb575b6101da5782156101ac578142116101c95760806000916020936040518581019160018352886040830152876060830152848201524660a08201523060c082015260c081526100e260e0826102cc565b519020604051858101917b0ca2ba3432b932bab69029b4b3b732b21026b2b9b9b0b3b29d05199960211b8352603c820152603c8152610122605c826102cc565b51902090604051918252848201526064356040820152608435606082015282805260015afa156101bd576000516001600160a01b03169081036101ac576000828152602081815260409182902080546001600160a01b0319168417905590513a81523393917f8b1927e0809f1e7682bb8c52fafe4c0445fea47afef60dd27e037e91fd104d2e91a4005b635cd5d23360e01b60005260046000fd5b6040513d6000823e3d90fd5b6341524ecf60e11b60005260046000fd5b63a3b8915f60e01b60005260046000fd5b506000848152602081905260409020546001600160a01b03161515610093565b600080fd5b3461020b57602036600319011261020b576004356000526000602052602060018060a01b0360406000205416604051908152f35b3461020b57602036600319011261020b576004356000818152602081905260409020546001600160a01b031633036102bb57600081815260208190526040812080546001600160a01b03191690553391907f345362b837633de0469dca5c44bbd675927342809c833db95ef5fd9c284d34fe9080a3005b6330cd747160e01b60005260046000fd5b601f909101601f19168101906001600160401b038211908210176102ef57604052565b634e487b7160e01b600052604160045260246000fdfea164736f6c634300081c000a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.28+commit.7893614a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"BadSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimExpired\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotOwner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Unavailable\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sponsor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasPrice\",\"type\":\"uint256\"}],\"name\":\"Claimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"Released\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"validUntil\",\"type\":\"uint64\"}],\"name\":\"claim\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"handle\",\"type\":\"bytes32\"}],\"name\":\"release\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"events\":{\"Claimed(bytes32,address,address,uint256)\":{\"params\":{\"gasPrice\":\"the price per gas the sponsor paid.\",\"handle\":\"the 32-byte handle key.\",\"sponsor\":\"the address that submitted the claim and paid the gas.\",\"who\":\"the address that signed for the handle (the owner).\"}}},\"kind\":\"dev\",\"methods\":{\"claim(bytes32,address,uint8,bytes32,bytes32,uint64)\":{\"params\":{\"handle\":\"32-byte key: the UTF-8 handle, zero-padded.\",\"r\":\"EIP-191 signature component.\",\"s\":\"EIP-191 signature component.\",\"v\":\"EIP-191 signature component.\",\"validUntil\":\"unix timestamp after which this signature must no longer be accepted.\",\"who\":\"the address that is claiming the handle. It must be the address that                    signed the claim digest, and the digest binds it, so the claim cannot                    be moved to a different address.\"}},\"release(bytes32)\":{\"params\":{\"handle\":\"the 32-byte handle key.\"}}},\"title\":\"Plaque\",\"version\":1},\"userdoc\":{\"errors\":{\"BadSignature()\":[{\"notice\":\"The signature does not recover to a usable address.\"}],\"ClaimExpired()\":[{\"notice\":\"The signed claim is past its validity window.\"}],\"NotOwner()\":[{\"notice\":\"The caller does not own the handle.\"}],\"Unavailable()\":[{\"notice\":\"The handle key is empty, or it already has an owner.\"}]},\"events\":{\"Claimed(bytes32,address,address,uint256)\":{\"notice\":\"Emitted when a handle is claimed.\"},\"Released(bytes32,address)\":{\"notice\":\"Emitted when the owner releases a handle so it can be claimed again.\"}},\"kind\":\"user\",\"methods\":{\"claim(bytes32,address,uint8,bytes32,bytes32,uint64)\":{\"notice\":\"Claim a handle for the address that signed the claim.\"},\"ownerOf(bytes32)\":{\"notice\":\"The address that currently owns a handle.\"},\"release(bytes32)\":{\"notice\":\"Release a handle so that it can be claimed again.\"}},\"notice\":\"The Plaque handle registry for the Portaldot V3 testnet. A *handle* is a 32-byte key (the UTF-8 name, zero-padded) bound to the address that signed for it. The claimant never needs gas: a sponsor submits the signed claim and pays the gas. The contract recovers the signature itself, so a sponsor can never bind a name to somebody else's address, and a captured signature is useless after `validUntil`. This contract holds no funds, mints nothing and has no upgrade path. The only state it keeps is `ownerOf[handle]` and a claim counter. Deposit note: Portaldot charges a storage deposit of roughly 0.138 tPOT per byte of contract code, so this contract is deliberately kept small. The settings used for the deployment are recorded in the repository README.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/hack/contracts/Plaque.sol\":\"Plaque\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[],\"viaIR\":true},\"sources\":{\"/root/hack/contracts/Plaque.sol\":{\"keccak256\":\"0x0e22e3eecf99fd9392f2e7a0e12e10ff9617962c1e6a1caef47ad239bc87a8a3\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://cc66da7d977c82697cd4b4584a89fea8b8775d09db0e96e386f00a58ddccd0ed\",\"dweb:/ipfs/QmTSx5B2raMzqsUpQiVdHmdxmXgDVa1VJwNquX1p5fHseQ\"]}},\"version\":1}",
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "/root/hack/contracts/Plaque.sol:Plaque",
+        "label": "ownerOf",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_bytes32,t_address)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_bytes32,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      }
+    }
+  },
+  "compiler": {
+    "name": "solc-js",
+    "version": "0.8.28+commit.7893614a.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 1
+    }
+  }
+}

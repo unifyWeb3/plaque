@@ -1,0 +1,63 @@
+{
+  "contractName": "Gate",
+  "sourceName": "contracts/Gate.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "counter",
+          "type": "uint256"
+        }
+      ],
+      "name": "Bumped",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "by",
+          "type": "uint256"
+        }
+      ],
+      "name": "bump",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b5060d680601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063b20eb4c414602d575b600080fd5b603c6038366004608b565b603e565b005b80600080828254604d919060a3565b90915550506000546040519081527fc081b7755956fdb9d6a5482bb04a62dbb62ad944141e7ff6ff2adad34bb1efb99060200160405180910390a150565b600060208284031215609c57600080fd5b5035919050565b8082018082111560c357634e487b7160e01b600052601160045260246000fd5b9291505056fea164736f6c634300081c000a",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063b20eb4c414602d575b600080fd5b603c6038366004608b565b603e565b005b80600080828254604d919060a3565b90915550506000546040519081527fc081b7755956fdb9d6a5482bb04a62dbb62ad944141e7ff6ff2adad34bb1efb99060200160405180910390a150565b600060208284031215609c57600080fd5b5035919050565b8082018082111560c357634e487b7160e01b600052601160045260246000fd5b9291505056fea164736f6c634300081c000a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.28+commit.7893614a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"name\":\"Bumped\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"by\",\"type\":\"uint256\"}],\"name\":\"bump\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"title\":\"Gate\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"notice\":\"Smallest contract that still exercises the full lifecycle Portaldot needs:         a state-changing call, an event, and readable state. Kept tiny on purpose:         Portaldot charges ~0.078 tPOT of storage deposit per byte of contract code.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/hack/contracts/Gate.sol\":\"Gate\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"/root/hack/contracts/Gate.sol\":{\"keccak256\":\"0x9485d4deebbc074db8222319c2ad6e4a3a09622246e1970a29f0afd1bc2cf3f5\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://bb4213a8f93a90e3adb59db29ec58204a252312fd1b6062d2b63de77e7221767\",\"dweb:/ipfs/QmTQzhmBjgc6SoFdxCiPpuNQmAJbw62Ex2YSdTVRZHeaAF\"]}},\"version\":1}",
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 4,
+        "contract": "/root/hack/contracts/Gate.sol:Gate",
+        "label": "counter",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  },
+  "compiler": {
+    "name": "solc-js",
+    "version": "0.8.28+commit.7893614a.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 1
+    }
+  }
+}

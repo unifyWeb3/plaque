@@ -1,0 +1,55 @@
+{
+  "contractName": "Probe",
+  "sourceName": "contracts/Probe.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "chainId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608080604052346017574660005560519081601d8239f35b600080fdfe6080806040526004361015601257600080fd5b60003560e01c639a8a059214602657600080fd5b34603f576000366003190112603f576020906000548152f35b600080fdfea164736f6c634300081c000a",
+  "deployedBytecode": "0x6080806040526004361015601257600080fd5b60003560e01c639a8a059214602657600080fd5b34603f576000366003190112603f576020906000548152f35b600080fdfea164736f6c634300081c000a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.28+commit.7893614a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"chainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"title\":\"Probe\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"notice\":\"Diagnostic contract: stores the EVM's block.chainid in storage slot 0 so it can be         read with eth_getStorageAt (the public node's eth_call is currently unusable).\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/hack/contracts/Probe.sol\":\"Probe\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[],\"viaIR\":true},\"sources\":{\"/root/hack/contracts/Probe.sol\":{\"keccak256\":\"0x801c60e78e1296ea7346821ebe36171564a980ab4bfee97762af1b61d6dda3ab\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0066048b04c70802af3465c74ad3ef4076c8418ef9a737cb2882d5a71edc5ffa\",\"dweb:/ipfs/QmbwAT11FQyy2VWM5Vt1oh4RaTyyTEkNdc3ZHFyBvzkunC\"]}},\"version\":1}",
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 4,
+        "contract": "/root/hack/contracts/Probe.sol:Probe",
+        "label": "chainId",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  },
+  "compiler": {
+    "name": "solc-js",
+    "version": "0.8.28+commit.7893614a.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 1
+    }
+  }
+}

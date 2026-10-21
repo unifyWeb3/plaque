@@ -1,0 +1,49 @@
+{
+  "chainId": 420420777,
+  "rpc": "https://test-evm-rpc-v3.portaldot.dev",
+  "solc": {
+    "name": "solc-js",
+    "version": "0.8.28+commit.7893614a.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 1
+    }
+  },
+  "deploy": {
+    "tx": "0xdb26a1035b50c11d8a6d5024621f7aa20ef0284f03f092b9540b6b66de1babb9",
+    "block": 130488,
+    "contract": "0x55040a925e106e7b7507015a0448ced999f572b6",
+    "gasUsed": "0x2f01baff07e17"
+  },
+  "bytecode": {
+    "onchainBytes": 214,
+    "artifactBytes": 214,
+    "identical": true,
+    "keccakOnchain": "0x2bd5f237864ce18ddea620f6bdfeffb0cb8956c0b69d24ac0d507232d6c967d3",
+    "keccakFreshCompile": "0x2bd5f237864ce18ddea620f6bdfeffb0cb8956c0b69d24ac0d507232d6c967d3"
+  },
+  "call": {
+    "tx": "0xc6a2ca92ccca3e2c689d190b229cd2765aa8b60456bdd372d2d9e6bf0cf0d61e",
+    "block": 130489,
+    "status": "0x1",
+    "gasUsed": "0x6139fc82ccce",
+    "logs": 1,
+    "event": "Bumped",
+    "eventArgs": [
+      "7"
+    ]
+  },
+  "state": {
+    "pinnedBlock": 130489,
+    "slot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "counter": "7",
+    "counterLatest": "7"
+  },
+  "balance": {
+    "before": "119479795733541521937",
+    "after": "85786367318744242017",
+    "costWei": "33693428414797279920"
+  },
+  "head": 130489
+}
