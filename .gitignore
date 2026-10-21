@@ -1,0 +1,25 @@
+# --- Secrets (never commit) ---
+secrets/
+*.key
+*.pem
+*.keystore
+.env
+.env.*
+!.env.example
+*.mnemonic
+wallet.json
+deployments.local.json
+# --- deps / build ---
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+artifacts/
+cache/
+typechain-types/
+coverage/
+*.tsbuildinfo
+.DS_Store
+# --- build output and local artefacts ---
+build/
+web/build/

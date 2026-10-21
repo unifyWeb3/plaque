@@ -1,0 +1,30 @@
+{
+  "name": "plaque",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Plaque - a sponsored handle registry for the Portaldot V3 testnet",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "compile": "node scripts/compile.mjs contracts/Plaque.sol contracts/PlaqueV2.sol contracts/Gate.sol",
+    "test": "node --test tests/plaque.test.mjs",
+    "relayer": "node scripts/relayer.mjs",
+    "deploy": "node scripts/deploy-any.mjs",
+    "sweep": "bash scripts/security-sweep.sh",
+    "web:dev": "cd web && npm run dev",
+    "web:build": "cd web && npm run build",
+    "web:qa": "cd web && node scripts/qa-browser.mjs http://127.0.0.1:3000"
+  },
+  "dependencies": {
+    "@polkadot/api": "16.4.6",
+    "@polkadot/keyring": "13.5.7",
+    "@polkadot/util-crypto": "13.5.7",
+    "ethers": "6.13.5",
+    "solc": "0.8.28"
+  },
+  "devDependencies": {
+    "ganache": "7.9.2"
+  }
+}
