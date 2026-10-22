@@ -12,7 +12,8 @@ Built for the **Portaldot Hacker House 2026** — Track 4, *Ecosystem DApps*.
 | Deployment tx | **`0x7857ccc37707d6303f97b6001828b33177e6bd546d16bb00e3597a3ca663f14d`** (block **132033**) |
 | Bytecode | 786 bytes, **byte-for-byte identical** to a fresh compile of `contracts/Plaque.sol` |
 | Explorer | <https://node-console.portaldot.dev> |
-| Frontend | `web/` (Next.js 15, App Router) |
+| Frontend | `web/` (Next.js 15, App Router) — live at **https://plaque-oxunify.vercel.app** |
+| Repository | **https://github.com/unifyWeb3/plaque** |
 | Tests | `node --test tests/` — **16 tests, 16 pass, exit 0** |
 
 ---
@@ -194,6 +195,10 @@ node scripts/claim-plaque.mjs <contract> <deployTx> unify
 No secret is ever needed to build or serve the frontend.
 
 ## 7. Tests — actual results
+
+The frontend is deployed at **https://plaque-oxunify.vercel.app** and reads the chain server-side;
+it was opened in Chromium at 390×844 and 1280×900, with no layout problems and no console errors.
+
 
 ```
 $ npm test

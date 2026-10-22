@@ -166,6 +166,18 @@ competitor map (names deliberately not recorded): `state/RESEARCH.md`. Name avai
 - [x] Stage 8 judging simulation (`state/JUDGING.md`)
 - [x] Stage 9 repository (6 commits), Vercel deployment, submission kit
 
+## 7b. Public URLs (VERIFIED 2026-10-22)
+
+| What | URL | State |
+|---|---|---|
+| Repository | **https://github.com/unifyWeb3/plaque** | public, `main`, 8 commits, all dated inside Oct 14 - Nov 6 |
+| Frontend | **https://plaque-oxunify.vercel.app** | deployed, reachable (HTTP 200) without a login; the deployment protection was turned off deliberately so a judge can open it |
+| Vercel project | `plaque` (id `prj_1iXdgZBbnkDn67Mgcsrcp2aj92Nk`, scope `oxunify`) | renamed from the CLI default `web` |
+| Explorer | https://node-console.portaldot.dev | the official node console |
+
+The deployed API was checked against the live chain: it returns the head block (142 868 at the time),
+the contract address, the deployment transaction and the `ownerOf` slot of a handle.
+
 ## 8. Open items for the human operator
 
 1. **Fund ≈100 tPOT to `5Hkx9RshKpqfvttQFTc5Ze7JbuunB6FP488X3eBzGPY9WYTf`** → then redeploy
