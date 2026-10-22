@@ -178,6 +178,18 @@ competitor map (names deliberately not recorded): `state/RESEARCH.md`. Name avai
 The deployed API was checked against the live chain: it returns the head block (142 868 at the time),
 the contract address, the deployment transaction and the `ownerOf` slot of a handle.
 
+## 7c. The local end-to-end demo (VERIFIED 2026-10-22)
+
+`scripts/demo-local.mjs` (`npm run demo`) runs the whole mechanic on ganache with the
+chain-compatible build: a claimant with **0** balance signs, a sponsor pays 219 031 376 959 824 wei
+of gas and submits, `ownerOf` becomes the signer, the `Claimed` event carries the sponsor and the
+gas price, the claimant's balance is still exactly 0, and a duplicate claim is refused with
+`Unavailable()`. Output: `evidence/local-demo.txt`. Labelled as a local chain — it proves the
+contract's mechanic, not Portaldot testnet state.
+
+Also written: `submission/CHECK-IN.md` — the ready-to-paste check-in text (deadline
+**2026-10-24 12:00Z**), which is a human action.
+
 ## 8. Open items for the human operator
 
 1. **Fund ≈100 tPOT to `5Hkx9RshKpqfvttQFTc5Ze7JbuunB6FP488X3eBzGPY9WYTf`** → then redeploy

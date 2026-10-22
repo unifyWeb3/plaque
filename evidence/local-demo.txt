@@ -1,0 +1,49 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_linux_arm64_127.node'
+Require stack:
+- /root/hack/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /root/hack/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+Plaque - the sponsored write, end to end on a local chain
+
+accounts
+   sponsor (pays gas)         0x3c9ef3eeb98ab3ff6f4b3963b7c3639586fe2065  1000 ETH (local)
+   claimant (pays nothing)    0xecd2783549cba7d8604966bfd4e9af9ffd76a993  0 ETH (local)
+
+contract
+   address                    0x57a731940494dE6d246Ae4186163624292dD53aB
+   bytecode                   741 bytes
+   matches the artifact       true
+
+1. the claimant signs a claim for "unify" (an off-chain signature, no gas)
+   handle key                 0x756e696679000000000000000000000000000000000000000000000000000000
+   digest                     0xe09d66be9f54ad049bb72b4aca04da79c6afc4b30762449e32a505f150495016
+   signature                  0x84dcb3c8a8311a0176...44b3141c
+
+2. the sponsor submits the signed claim and pays the gas
+   transaction                0xf580560f6e02c9b8d3b5009583de9353d0598535da9f2f2d16a984784a881582
+   block                      4
+   gas used                   51408
+   event                      Claimed(handle="unify", who=0xecD2783549cBa7d8604966BFD4E9af9ffD76a993,
+                              sponsor=0x3C9Ef3eEB98aB3ff6F4b3963b7c3639586fE2065, gasPrice=743392931)
+   sponsor paid               219031376959824 wei (gas)
+   claimant paid              0 wei
+
+3. the registry, read back from the chain
+   ownerOf("unify")           0xecD2783549cBa7d8604966BFD4E9af9ffD76a993
+   equals the signer          true
+   claimant balance           0 wei  <- unchanged
+
+4. a second claim for the same handle is refused
+   refusal                    Unavailable()
+   ownerOf("unify") still     0xecD2783549cBa7d8604966BFD4E9af9ffD76a993
+
+storage slot of the binding: keccak256(handle || 0) = 0x56d47f50d2cfc36c2cba3ed1e61a8418df6c3a2e09f96e577d576a1c6c3b8cbf
+
+Done. On the Portaldot V3 testnet the same flow uses the same contract; it needs the
+testnet wallet funded with ~71 tPOT for the code deposit:
+  node scripts/deploy-any.mjs PlaqueV2 && node scripts/claim-plaque.mjs ...

@@ -15,7 +15,8 @@
     "sweep": "bash scripts/security-sweep.sh",
     "web:dev": "cd web && npm run dev",
     "web:build": "cd web && npm run build",
-    "web:qa": "cd web && node scripts/qa-browser.mjs http://127.0.0.1:3000"
+    "web:qa": "cd web && node scripts/qa-browser.mjs http://127.0.0.1:3000",
+    "demo": "node scripts/demo-local.mjs"
   },
   "dependencies": {
     "@polkadot/api": "16.4.6",

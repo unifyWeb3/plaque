@@ -236,6 +236,41 @@ Browser QA (`web/scripts/qa-browser.mjs`, Playwright/Chromium): screenshots at 3
 no horizontal overflow, an `h1` on every screen, a visible focus outline on the first tab stop, and
 no console errors.
 
+## 7b. The product mechanic, end to end (`npm run demo`)
+
+The chain-compatible build, run against a local EVM (ganache) with a claimant that holds **0**:
+
+```
+$ npm run demo
+Plaque - the sponsored write, end to end on a local chain
+
+accounts
+   sponsor (pays gas)         0x503dfeccfc48ab11908ad192bb62028bc00b00c3  1000 ETH (local)
+   claimant (pays nothing)    0x7e6794dc1032580a6e9ebffb83ae31ca491e6496  0 ETH (local)
+contract
+   address                    0x58aCA140bDdce2409FAD44E8747aB41Fc1Ba3E1d
+   bytecode                   741 bytes
+   matches the artifact       true
+1. the claimant signs a claim for "unify" (an off-chain signature, no gas)
+   handle key                 0x756e696679000000000000000000000000000000000000000000000000000000
+2. the sponsor submits the signed claim and pays the gas
+   gas used                   51408
+   event                      Claimed(handle="unify", who=0x7e6794dc1032580A6E9eBfFB83AE31cA491E6496,
+                              sponsor=0x503DfECcFc48AB11908AD192bB62028bC00B00C3, gasPrice=743392931)
+   sponsor paid               219031376959824 wei (gas)
+   claimant paid              0 wei
+3. the registry, read back from the chain
+   ownerOf("unify")           0x7e6794dc1032580A6E9eBfFB83AE31cA491E6496
+   equals the signer          true
+   claimant balance           0 wei  <- unchanged
+4. a second claim for the same handle is refused
+   refusal                    Unavailable()
+```
+
+The full output is in `evidence/local-demo.txt`. This is a local chain and is labelled as such:
+it proves the mechanic the contract implements, not Portaldot testnet state. The same contract
+source is what the repository deploys to Portaldot once the code deposit is funded.
+
 ## 8. Repository map
 
 ```
