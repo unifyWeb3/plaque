@@ -8,15 +8,17 @@
     "node": ">=20"
   },
   "scripts": {
-    "compile": "node scripts/compile.mjs contracts/Plaque.sol contracts/PlaqueV2.sol contracts/Gate.sol",
-    "test": "node --test tests/plaque.test.mjs",
+    "compile": "node scripts/compile.mjs contracts/Plaque.sol contracts/PlaqueV2.sol contracts/PlaqueLite.sol contracts/Gate.sol",
+    "test": "node --test tests/plaque.test.mjs tests/plaque-lite.test.mjs",
     "relayer": "node scripts/relayer.mjs",
     "deploy": "node scripts/deploy-any.mjs",
     "sweep": "bash scripts/security-sweep.sh",
     "web:dev": "cd web && npm run dev",
     "web:build": "cd web && npm run build",
     "web:qa": "cd web && node scripts/qa-browser.mjs http://127.0.0.1:3000",
-    "demo": "node scripts/demo-local.mjs"
+    "demo": "node scripts/demo-local.mjs",
+    "verify:live": "node scripts/verify-live.mjs",
+    "claim": "node scripts/claim-plaque-lite.mjs"
   },
   "dependencies": {
     "@polkadot/api": "16.4.6",

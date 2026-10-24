@@ -363,6 +363,12 @@ test('the UI state function agrees with the contract', async () => {
   assert.equal(st.canClaim, false, 'the UI must not offer a claim the contract would refuse');
   assert.equal(st.reason, 'handle is empty or already owned');
 
+  // a taken handle reads as taken even with no wallet connected: it is a fact about the chain
+  st = deriveHandleState({ owner, connected: null, handle });
+  assert.equal(st.status, 'taken');
+  assert.equal(st.canClaim, false);
+  assert.equal(st.owner, owner);
+
   // the owner can release
   st = deriveHandleState({ owner, connected: owner, handle });
   assert.equal(st.status, 'owned');

@@ -1,0 +1,16 @@
+Plaque live verification - block 167407
+
+  PASS  deployed code equals the committed build  302 bytes, keccak 0x8a952eb82ff4a318...
+  PASS  ownerOf("unify") is the zero-balance claimant  0xd35404a86f825741ba8a65a31eb8ca1d52315fe6
+  PASS  the claimant still holds 0 wei
+  PASS  the Claimed event is on chain  block 167209
+  PASS  the event names the claimant as `who`
+  PASS  the event names the sponsor that paid
+        tx 0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2
+        explorer https://node-console.portaldot.dev
+  PASS  a valid signature is accepted (eth_call)
+  PASS  a tampered signature is refused
+  PASS  a signature for another address is refused
+  PASS  an empty handle is refused
+
+ALL CHECKS PASSED
