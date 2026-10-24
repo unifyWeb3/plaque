@@ -171,7 +171,7 @@ server-side. SDK: `web/lib/plaque.js` (`buildClaimDigest` v1, `buildClaimDigestV
 
 | What | URL / value |
 |---|---|
-| Repository | **https://github.com/unifyWeb3/plaque** — public, `main`, 14 commits, all inside Oct 14 – Nov 6 |
+| Repository | **https://github.com/unifyWeb3/plaque** — public, `main`, 14+ commits, all inside Oct 14 – Nov 6 |
 | Frontend | **https://plaque-oxunify.vercel.app** — public (deployment protection deliberately off) |
 | Vercel project | `plaque` (`prj_1iXdgZBbnkDn67Mgcsrcp2aj92Nk`, scope `oxunify`) |
 | Explorer | https://node-console.portaldot.dev |

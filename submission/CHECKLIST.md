@@ -20,7 +20,7 @@ marked **form** — the field limits are not published, so the copy is deliberat
 | Project name | `Plaque` — in `submission/BUIDL.md` |
 | Team members | solo: unify (`@oxunify`) — registered |
 | One-sentence overview | "Claim your name on Portaldot without paying a thing — you sign, a sponsor pays." |
-| Public GitHub repository | `github.com/unifyWeb3/plaque` — public, fourteen commits, all inside Oct 14 – Nov 6, no bulk commit in the final 24 h |
+| Public GitHub repository | `github.com/unifyWeb3/plaque` — public, a dozen-plus commits, all inside Oct 14 – Nov 6, no bulk commit in the final 24 h |
 | README: complete | done — problem, audience, solution, architecture, trust model, live evidence, deployment details, install/run, tests, the two chain constraints, roadmap |
 | README: deployment instructions | `node scripts/deploy-any.mjs PlaqueLite` (+ the deposit-driven gas-limit rule) |
 | README: project documentation | `state/` — research, decision, design, the chain limitation, the memory log |
@@ -36,7 +36,7 @@ marked **form** — the field limits are not published, so the copy is deliberat
 * **Deployment on the Portaldot testnet** — done, with the bytecode proof and a live sponsored claim.
 * **Code primarily produced Oct 14 – Nov 6** — every commit is dated inside that window and the work
   is spread across it.
-* **At least three valid commits** — fourteen.
+* **At least three valid commits** — a dozen-plus.
 * **No substantial change after the code freeze** — after Nov 6, 04:00 UTC only bug fixes, reported to
   the organiser with a clear record.
 * **Originality** — the code is original; the only reused dependencies are `solc-js`, `ethers`,

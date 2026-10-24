@@ -31,7 +31,7 @@ Done and verified:
 * A Next.js frontend reading the chain server-side, deployed publicly at
   **https://plaque-oxunify.vercel.app**; a sponsor relayer; a deploy script that fails closed; a
   pre-push security sweep; browser QA at 390×844 and 1280×900.
-* **14 commits** in the public repository, spread across the event window.
+* **A dozen-plus commits** in the public repository, spread across the event window.
 
 ## 2. What the engineering found (and fixed)
 

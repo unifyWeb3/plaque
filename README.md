@@ -63,6 +63,14 @@ That is the honest number, and it is larger than a plain transfer because this c
 as small as it is (section 4) and why "sponsorship" is a real budget line rather than a rounding
 error.
 
+### The live product
+
+| The dashboard, with the live claim on chain | The homepage |
+|---|---|
+| ![The dashboard showing the unify handle bound to the zero-balance signer](evidence/qa/live-dashboard-taken.png) | ![The Plaque homepage reading the live testnet](evidence/qa/home-desktop.png) |
+
+Both screenshots come from <https://plaque-oxunify.vercel.app> and are read straight from the testnet.
+
 ## 3. Architecture and data flow
 
 ```
