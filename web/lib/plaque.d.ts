@@ -40,6 +40,13 @@ export declare function buildClaimDigest(args: {
   contract: string;
   validUntil: number | bigint;
 }): string;
+
+export declare function buildClaimDigestV2(args: {
+  handle: string;
+  who: string;
+  chainId: number | bigint;
+  contract: string;
+}): string;
 export declare function keccakHex(input: string | Uint8Array): string;
 export declare function keccakText(text: string): string;
 export declare function deriveHandleState(state: {
@@ -50,3 +57,11 @@ export declare function deriveHandleState(state: {
   validUntil?: number;
 }): HandleState;
 export declare function weiToPot(wei: bigint | string | number): string;
+
+export declare function encodeLiteClaim(args: {
+  key: string;
+  who: string;
+  v: number;
+  r: string;
+  s: string;
+}): string;

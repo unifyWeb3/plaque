@@ -142,6 +142,37 @@ export function buildClaimDigest({ handle, who, chainId, contract, validUntil })
   return keccakHex('0x' + parts.map((p) => p.slice(2)).join(''));
 }
 
+/**
+ * The claim digest for the chain-compatible builds (`PlaqueV2.sol` and `PlaqueLite.sol`): the
+ * signature window moved to the sponsor, so `validUntil` is no longer part of the digest.
+ *   keccak256(abi.encode(bytes32(1), handle, bytes32(uint160(who)), bytes32(chainId), bytes32(address(this))))
+ * @param {{handle: string, who: string, chainId: number|bigint, contract: string}} args
+ * @returns {string} 32-byte hex string
+ */
+export function buildClaimDigestV2({ handle, who, chainId, contract }) {
+  const key = String(handle).replace(/^0x/, '').padEnd(64, '0');
+  const whoHex = BigInt(who).toString(16).padStart(64, '0');
+  const parts = [
+    '0x' + (1).toString(16).padStart(64, '0'),
+    '0x' + key,
+    '0x' + whoHex,
+    '0x' + BigInt(chainId).toString(16).padStart(64, '0'),
+    '0x' + BigInt(contract).toString(16).padStart(64, '0'),
+  ];
+  return keccakHex('0x' + parts.map((p) => p.slice(2)).join(''));
+}
+
+/**
+ * The calldata for a claim on the lite build (`PlaqueLite.sol`), which has no ABI:
+ * `handle || who || v || r || s`, five 32-byte words. This is exactly what the fallback reads.
+ * @param {{key: string, who: string, v: number, r: string, s: string}} args
+ * @returns {string} the 0x-prefixed calldata
+ */
+export function encodeLiteClaim({ key, who, v, r, s }) {
+  const pad = (value) => BigInt(value).toString(16).padStart(64, '0');
+  return '0x' + [key, who, v, r, s].map(pad).join('');
+}
+
 /** keccak256 of a UTF-8 string (used for event signatures and domain tags). */
 export function keccakText(text) {
   return '0x' + keccakBytes(new TextEncoder().encode(text));
@@ -245,14 +276,15 @@ export function deriveHandleState(state) {
       reason: handle?.reason,
     };
   }
-  if (!connected) {
-    return { status: 'needs-wallet', canClaim: false, canRelease: false, reason: 'connect a wallet to sign' };
-  }
-  if (owner && owner.toLowerCase() === connected.toLowerCase()) {
+  if (owner && connected && owner.toLowerCase() === connected.toLowerCase()) {
     return { status: 'owned', canClaim: false, canRelease: true, owner };
   }
+  // A taken handle is a fact about the chain, not about the visitor: show it without a wallet.
   if (owner) {
     return { status: 'taken', canClaim: false, canRelease: false, owner, reason: REFUSALS.Unavailable };
+  }
+  if (!connected) {
+    return { status: 'needs-wallet', canClaim: false, canRelease: false, reason: 'connect a wallet to sign' };
   }
   if (validUntil && now > validUntil) {
     return { status: 'expired', canClaim: false, canRelease: false, reason: REFUSALS.ClaimExpired };

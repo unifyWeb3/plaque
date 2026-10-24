@@ -1,25 +1,25 @@
 // Server-side chain access for the Plaque dashboard.
 //
-// NOTE ON eth_call: the public Portaldot V3 testnet node currently answers every
-// eth_call with "Invalid call: Payment" (verified 2026-10-21, including a plain view
-// call on a known-good contract, with four different `from` accounts and two gas
-// values). The dashboard therefore reads contract state with eth_getStorageAt and
-// eth_getLogs, which do work. Every read is pinned to an explicit block number.
+// Read path: the dashboard reads contract state with eth_getStorageAt and eth_getLogs and pins
+// every read to an explicit block number. eth_call on this node rejects calls from accounts that
+// cannot pay the fee ("Invalid call: Payment"), so it is not used for reads.
 
 import { keccakHex, keccakText } from './plaque.js';
 
 export const RPC = process.env.NEXT_PUBLIC_PORTALDOT_RPC ?? 'https://test-evm-rpc-v3.portaldot.dev';
 export const CHAIN_ID = 420420777;
-export const CONTRACT = process.env.NEXT_PUBLIC_PLAQUE_CONTRACT ?? '0xa0e58d0c6392048959c0b16a9d3696fe49d063d6';
+// The live registry: PlaqueLite, deployed 2026-10-22 in block 167044. It is the chain-compatible
+// build - no BLOCK-family opcode anywhere - and it has already accepted a live sponsored claim.
+export const CONTRACT = process.env.NEXT_PUBLIC_PLAQUE_CONTRACT ?? '0x5432e6b89dc3042d47f2be98e971cad9dabab685';
 export const EXPLORER = 'https://node-console.portaldot.dev';
-export const DEPLOY_TX = '0x7857ccc37707d6303f97b6001828b33177e6bd546d16bb00e3597a3ca663f14d';
-export const DEPLOY_BLOCK = 132033;
+export const DEPLOY_TX = '0xcee4d1db6c86250faa16bd67419168c7628c8a88533bf3d84316ccfd0c3bb63a';
+export const DEPLOY_BLOCK = 167044;
 
-const CLAIMED_SIGNATURE = 'Claimed(bytes32,address,address,uint256)';
-const RELEASED_SIGNATURE = 'Released(bytes32,address)';
+// Claimed(bytes32 indexed handle, address indexed who, address indexed sponsor): every parameter
+// is indexed, so the event carries four topics and no data.
+const CLAIMED_SIGNATURE = 'Claimed(bytes32,address,address)';
 
 export const CLAIMED_TOPIC = keccakText(CLAIMED_SIGNATURE);
-export const RELEASED_TOPIC = keccakText(RELEASED_SIGNATURE);
 
 async function rpc<T>(method: string, params: unknown[]): Promise<T> {
   const res = await fetch(RPC, {
@@ -66,20 +66,20 @@ export async function readEvents(block: number): Promise<ClaimEvent[]> {
     address: CONTRACT,
     fromBlock: '0x' + fromBlock.toString(16),
     toBlock: '0x' + block.toString(16),
-    topics: [],
+    topics: [CLAIMED_TOPIC],
   }]);
   const out: ClaimEvent[] = [];
   for (const l of logs ?? []) {
-    const sig = (l.topics?.[0] ?? '').toLowerCase();
-    const isClaimed = sig === CLAIMED_TOPIC;
-    const isReleased = sig === RELEASED_TOPIC;
-    if (!isClaimed && !isReleased) continue;
+    if ((l.topics?.[0] ?? '').toLowerCase() !== CLAIMED_TOPIC) continue;
+    if ((l.topics?.length ?? 0) < 4) continue;
     out.push({
-      kind: isClaimed ? 'claimed' : 'released',
+      kind: 'claimed',
       handle: '0x' + (l.topics[1] ?? '').slice(-64),
       who: '0x' + (l.topics[2] ?? '').slice(-40),
-      sponsor: isClaimed ? '0x' + (l.topics[3] ?? '').slice(-40) : null,
-      gasPrice: isClaimed ? BigInt(l.data === '0x' ? '0x0' : l.data).toString() : null,
+      sponsor: '0x' + (l.topics[3] ?? '').slice(-40),
+      // the lite event does not carry the gas price; the transaction does, and the explorer
+      // shows it. The UI links to the transaction instead of printing a made-up number.
+      gasPrice: null,
       block: parseInt(l.blockNumber, 16),
       txHash: l.transactionHash,
       logIndex: parseInt(l.logIndex, 16),

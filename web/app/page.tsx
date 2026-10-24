@@ -120,8 +120,8 @@ export default async function Home() {
               <dd>{facts.ok ? facts.sponsors : '—'}<small>distinct addresses that paid gas</small></dd>
             </div>
             <div>
-              <dt>Cost per write</dt>
-              <dd>≈0.01<small>tPOT of gas — measured from live V3 receipts</small></dd>
+              <dt>Cost per claim</dt>
+              <dd>3.87<small>tPOT at block 167,209 — 0.03 computation + 3.84 storage deposit</small></dd>
             </div>
             <div>
               <dt>Your balance</dt>

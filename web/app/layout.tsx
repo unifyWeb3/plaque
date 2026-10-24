@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               (chain id 420420777). Testnet only — no real value, no audited code, no mainnet deployment.
             </p>
             <p className="mono muted">
-              contract 0xa0e58d0c6392048959c0b16a9d3696fe49d063d6 · 14-decimal tPOT · pallet-revive EVM
+              contract 0x5432e6b89dc3042d47f2be98e971cad9dabab685 · 14-decimal tPOT · pallet-revive EVM
             </p>
           </div>
         </footer>

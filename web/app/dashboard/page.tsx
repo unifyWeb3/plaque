@@ -2,18 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  buildClaimDigest,
+  buildClaimDigestV2,
   deriveHandleState,
   handleKey,
   handleNameFromKey,
   normalizeHandle,
-  weiToPot,
   type HandleState,
   type PlaqueHandle,
 } from '../../lib/plaque';
 
 const CHAIN_ID = 420420777;
-const CONTRACT = process.env.NEXT_PUBLIC_PLAQUE_CONTRACT ?? '0xa0e58d0c6392048959c0b16a9d3696fe49d063d6';
+// The live registry (PlaqueLite, block 167044). Read-side constants live in lib/chain.ts; this
+// one is the same public value, needed in the browser to build the signed claim.
+const CONTRACT = process.env.NEXT_PUBLIC_PLAQUE_CONTRACT ?? '0x5432e6b89dc3042d47f2be98e971cad9dabab685';
+const EXPLORER = 'https://node-console.portaldot.dev';
 const SPONSOR_URL = process.env.NEXT_PUBLIC_SPONSOR_URL ?? '';
 
 type RegistryEvent = {
@@ -119,13 +121,11 @@ export default function Dashboard() {
     setBusy(true);
     setResult(null);
     try {
-      const validUntil = Math.floor(Date.now() / 1000) + 3600;
-      const digest = buildClaimDigest({
+      const digest = buildClaimDigestV2({
         handle: handle.key!,
         who: wallet.address,
         chainId: CHAIN_ID,
         contract: CONTRACT,
-        validUntil,
       });
       const signature = (await window.ethereum!.request({
         method: 'personal_sign',
@@ -138,7 +138,6 @@ export default function Dashboard() {
         v: parseInt(signature.slice(130, 132), 16),
         r: '0x' + signature.slice(2, 66),
         s: '0x' + signature.slice(66, 130),
-        validUntil,
         chainId: CHAIN_ID,
         contract: CONTRACT,
         digest,
@@ -276,9 +275,10 @@ export default function Dashboard() {
             <div className="card" style={{ marginTop: '1rem' }}>
               <h3>What the sponsor pays</h3>
               <p className="muted" style={{ fontSize: '0.92rem' }}>
-                Every claim records the sponsor and the gas price it was sent at, so the cost of
-                growing the registry is public. One sponsored write costs about
-                0.01 tPOT of gas on the V3 testnet (measured from live receipts).
+                Every claim records the sponsor and its transaction, so the cost of growing the
+                registry is public. The live claim cost <strong>3.87 tPOT</strong> at block 167,209 —
+                0.03 tPOT of computation and signature checking, and 3.84 tPOT of storage deposit
+                that this chain holds for the new registry entry.
               </p>
               {loading ? (
                 <div className="skeleton" style={{ height: 90 }} />
@@ -295,8 +295,8 @@ export default function Dashboard() {
                     <tr>
                       <th>handle</th>
                       <th>sponsor</th>
-                      <th>gas price</th>
                       <th>block</th>
+                      <th>transaction</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -304,8 +304,12 @@ export default function Dashboard() {
                       <tr key={e.txHash + e.logIndex}>
                         <td>{handleNameFromKey(e.handle)}</td>
                         <td>{short(e.sponsor)}</td>
-                        <td>{e.gasPrice ? `${weiToPot(BigInt(e.gasPrice) * 1000000000000n)} tPOT/gas` : '—'}</td>
                         <td>{e.block.toLocaleString('en-US')}</td>
+                        <td>
+                          <a href={`${EXPLORER}`} target="_blank" rel="noreferrer">
+                            {short(e.txHash)}
+                          </a>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -356,12 +360,14 @@ export default function Dashboard() {
             </div>
 
             <div className="card" style={{ marginTop: '1rem' }}>
-              <h3>Known V3 testnet limitation</h3>
+              <h3>How the live build differs</h3>
               <p className="muted" style={{ fontSize: '0.92rem' }}>
-                This runtime (pallet-revive) reverts on the BLOCK-family opcodes, so the
-                deployed build — which reads <code>block.chainid</code> inside the claim
-                digest — cannot complete a claim on this chain. The chain-compatible build and
-                the exact transactions that prove it are in the repository README.
+                This runtime reverts on the BLOCK-family opcodes, so the contract reads no
+                clock and no chain id from the chain: the chain id is a compile-time constant
+                and the claim binds the handle, the claimant, the chain and this contract. The
+                deployed build is 302 bytes of constant-size code, which is what makes it
+                affordable here — this chain charges a deposit for every byte of code and for
+                every storage entry it keeps.
               </p>
             </div>
 
