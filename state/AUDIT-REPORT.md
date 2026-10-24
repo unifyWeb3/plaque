@@ -1,6 +1,6 @@
 # Plaque — hostile audit report
 
-**When:** 2026-10-24 10:40Z. **Human submits; the agent did not submit.** Check-in 12:00Z; final 2026-11-06 04:00Z.
+**When:** 2026-10-24 10:47Z. **Human submits; the agent did not submit.** Check-in 12:00Z; final 2026-11-06 04:00Z.
 
 ## 1. Verdict
 **Ship the audit, not a new product.** The live sponsored claim and the 302-byte reproducible build are real. The category is not novel, the hosted app is now correct, and the required demo video is still missing.
@@ -33,7 +33,7 @@ Official page checked 08:28Z: check-in 2026-10-24 12:00Z; final 2026-11-06 04:00
 Public clone `https://github.com/unifyWeb3/plaque.git` at `f3eefa0` (10:34Z): `npm install` exit 0, compile exit 0, 33/33 tests exit 0, `verify:live` 10/10 exit 0 at block 173512, no secrets. Local clean clone also passed web `npm ci`, typecheck, build, demo and sweep. Secret scan across tracked files and all refs returned zero private-key/token files; no `secrets/` is tracked.
 
 ## 11. Commits and deployment
-Five additive commits: `641a10c`, `a078c07`, `4ed61f2`, `fbf1a0f`, `f3eefa0`; pushed `23f4067..f3eefa0`. Vercel manual production deploy `dpl_AQv46Teudz3iweHGs58qVWe4fumd` is Ready at `https://plaque-oxunify.vercel.app` (CLI exited 1 on a status-poll network error; `vercel inspect` confirmed Ready).
+Six additive commits: `641a10c`, `a078c07`, `4ed61f2`, `fbf1a0f`, `f3eefa0`, `97c8705`; pushed `23f4067..97c8705`. Vercel manual production deploy `dpl_AQv46Teudz3iweHGs58qVWe4fumd` is Ready at `https://plaque-oxunify.vercel.app` (CLI exited 1 on a status-poll network error; `vercel inspect` confirmed Ready).
 
 ## 12. Blockers and human actions
 **Blocking:** record the required ≤3-minute demo video from `submission/DEMO-SCRIPT.md`; submit check-in before 12:00Z and final before 2026-11-06 04:00Z. **Manual:** set the Vercel project Root Directory to `web` (currently `.`; Git pushes trigger a failed build) or deploy from `web` with `vercel build --prod` + `vercel deploy --prebuilt --prod`. **Known findings:** root `npm ci` fails on lockfile drift (`npm install` works); `npm run lint` is unconfigured; no `AGENTS.md` exists.
