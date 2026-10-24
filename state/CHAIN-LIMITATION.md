@@ -10,7 +10,8 @@
 //    -> deployment REVERTED
 //    tx 0xba2610496c3f9046aa29f9a1a4f42b9b0c3ca1af72fe5b741293951d3518fcff, block 133151
 //  * contracts/Gate.sol  (214 bytes) uses no block.* opcode -> deployment SUCCEEDED
-//  * contracts/Plaque.sol (786 bytes) uses no block.* opcode -> deployment SUCCEEDED
+//  * contracts/Plaque.sol (786 bytes): its **constructor** uses no block.* opcode -> deployment SUCCEEDED;
+//    its **claim** path reads block.chainid and block.timestamp, so claims revert
 //    tx 0x7857ccc37707d6303f97b6001828b33177e6bd546d16bb00e3597a3ca663f14d, block 132033
 //
 // Both failing probes were given a gas limit above the affordable ceiling (1.15e15 gas), so the
@@ -39,9 +40,9 @@
 //  * The pool also requires balance >= gasLimit × maxFeePerGas, so the gas limit cannot simply be
 //    raised without funds.
 //
-// CONSEQUENCE: the readable chain-compatible build (contracts/PlaqueV2.sol, 741 bytes, ~71 tPOT to
+// CONSEQUENCE: the readable chain-compatible build (contracts/PlaqueV2.sol, 741 bytes, ~74.5 tPOT to
 // deploy) could not be deployed on the available budget. The deployed build is
-// contracts/PlaqueLite.sol: 302 bytes, the same digest, the same storage slot, the same event, and
-// no block.* dependency. It claimed live on 2026-10-24 (tx
+// contracts/PlaqueLite.sol: 302 bytes, the same digest and storage slot, the three-address Claimed event, and
+// no block.* dependency. It deliberately has no release and no validity window. It claimed live on 2026-10-24 (tx
 // 0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2, block 167209) and
 // `npm run verify:live` re-checks the whole path read-only.

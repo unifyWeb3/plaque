@@ -1,8 +1,9 @@
 # MEMORY — Portaldot Hacker House 2026 (builder: unify / @oxunifyy)
 
-Single source of truth. Findings, evidence, decisions, open items.
+Project log: findings, evidence, decisions, open items. The machine-readable source for public
+chain parameters is `config/plaque.json`; the consistency test fails if a copy drifts.
 All times UTC. "VERIFIED" = observed directly. "UNRESOLVED" = not yet confirmed.
-Last updated **2026-10-24 01:30Z**.
+Last updated **2026-10-24 09:56Z** (hostile audit).
 
 ---
 
@@ -23,7 +24,7 @@ Last updated **2026-10-24 01:30Z**.
 | DoraHacks form field limits | **UNRESOLVED** — not published; every copy block is written short | UNRESOLVED |
 
 **Track:** 4 Ecosystem DApps (the sponsored-write rail underneath is track-1 middleware).
-**Time remaining at 2026-10-24 01:30Z:** final deadline **≈13.1 days**; check-in **≈10.5 hours**.
+**Time remaining at 2026-10-24 09:56Z:** final deadline **≈12.8 days**; check-in **≈2.1 hours**.
 
 ## 2. The Portaldot V3 testnet (all VERIFIED)
 
@@ -32,14 +33,14 @@ Last updated **2026-10-24 01:30Z**.
 | EVM RPC | `https://test-evm-rpc-v3.portaldot.dev` |
 | Substrate node | `wss://test-node-v3.portaldot.dev` |
 | Chain id | **420420777**; chain `Portaldot V3 Test`, ss58 42, **14 decimals**, symbol `tPOT` |
-| Block time | ~2 s (head 167,577 at 2026-10-24 01:30Z) |
+| Block time | ~2 s (head 171,519 at 2026-10-24 07:30Z) |
 | EVM implementation | **pallet-revive** (index 80); the runtime also has `pallet-contracts` (WASM, 21) |
 | Other pallets | `MetaTx` (89), `VerifySignature` (81), `SkipFeelessPayment` (77), `AssetsPrecompiles` (91/92), `TransactionStorage` (51), `Mixnet` (75), `Broker` (73), `Oracle` (85), `Sudo` (22) |
 | Faucet | **no public endpoint**; test POT arrives by hand via Discord |
 | Node console (explorer) | `https://node-console.portaldot.dev` |
 | RPC reliability | 5–9 s stalls at times → **all RPC through `scripts/rpc-lib.mjs`** (fetch + retry + timeout) |
 | `eth_call` | **works for funded callers**; a caller with no balance gets `Invalid call: Payment`. This is why the live signature checks use the sponsor as `from`. The dashboard still reads `eth_getStorageAt` + `eth_getLogs` (pinned to a block) |
-| Node pruning | receipts disappear after ~2–3k blocks; read state with `eth_getStorageAt` / `eth_getLogs` and keep local evidence JSON |
+| Node pruning | on 2026-10-24, receipts and logs from ~40k blocks back were still served; do **not** assume that holds forever. Read state with `eth_getStorageAt` / `eth_getLogs` from the deployment block and keep local evidence JSON. |
 
 ### Cost model (measured, not estimated)
 
@@ -65,9 +66,9 @@ Last updated **2026-10-24 01:30Z**.
 
 **Resolution:** the deployed build reads no block value. The chain id is a compile-time constant; the
 digest binds handle + claimant + chain id + contract address. The readable chain-compatible build is
-`contracts/PlaqueV2.sol` (741 B, unaffordable at ~71 tPOT); the deployed build is
-`contracts/PlaqueLite.sol` (302 B, fallback-only assembly, same digest / same storage slot / same
-event).
+`contracts/PlaqueV2.sol` (741 B, unaffordable at ~74.5 tPOT); the deployed build is
+`contracts/PlaqueLite.sol` (302 B, fallback-only assembly, same digest and storage slot, three-address
+`Claimed` event; no release, no window, no gas-price field).
 
 ## 3. The live deployment and the live claim (VERIFIED 2026-10-24)
 
@@ -148,12 +149,12 @@ server-side. SDK: `web/lib/plaque.js` (`buildClaimDigest` v1, `buildClaimDigestV
 | D3 | All chain access via `scripts/rpc-lib.mjs` | The public RPC stalls; the ethers provider timed out |
 | D4 | Deploy from an **eth-derived AccountId32** | Statelessly mapped, and a normal secp256k1 address |
 | D5 | Deploy with a **large gas limit** computed from the balance | The storage-deposit allowance follows the gas limit |
-| D6 | Optimizer runs 1, `metadata.bytecodeHash: none`, `evmVersion: paris` | Code size is charged |
+| D6 | Per-contract settings in `scripts/build-config.mjs`; `evmVersion: paris` | Code size is charged, and the deployed builds used different pipelines. Pinning them is what makes `npm run compile` reproduce the deployed bytecode. |
 | D7 | Bootstrapped from the **public `//Alice` dev account** | The faucet needs a human action; a published dev key on a testnet is a safe, disclosed alternative |
 | D8 | Proceeded with the whole build rather than stopping for the faucet | The chain gate had passed |
 | D9 | The first deployed contract keeps `block.chainid`; the chain-compatible build is a separate file | The deployed bytecode must correspond byte-for-byte to a committed source |
-| D10 | No competitor code, wording, UI or structure reused; no researched profile or project named anywhere | The brief's rule; enforced by `scripts/security-sweep.sh` |
-| D11 | The **deployed** build is `PlaqueLite.sol` (302 B), not `PlaqueV2.sol` (741 B) | The chain charges ~0.12 tPOT/byte; 741 B needed ~71 tPOT, the wallet had 41.5. Cutting bytes was the only way to get a working live deployment inside the budget |
+| D10 | No competitor code, wording, UI or structure reused; no researched profile or project named anywhere | The brief's rule; the names were removed from `state/NAME-CHECK.md` and `state/DECISION.md` during the audit. |
+| D11 | The **deployed** build is `PlaqueLite.sol` (302 B), not `PlaqueV2.sol` (741 B) | The chain charges ~0.12 tPOT/byte; 741 B needed ~74.5 tPOT, the wallet had 41.5. Cutting bytes was the only way to get a working live deployment inside the budget |
 | D12 | A claim's gas limit is sized from the storage deposit, not from the computation | Measured: the write needs ≈3.84 tPOT of deposit allowance; a 2e13 limit (0.66 tPOT) traps at the `sstore` |
 | D13 | The dashboard targets the lite build and reads storage + logs (no `eth_call`) | The lite build has no ABI; storage and logs are the ABI-free read path, and they are pinned to a block |
 
@@ -170,7 +171,7 @@ server-side. SDK: `web/lib/plaque.js` (`buildClaimDigest` v1, `buildClaimDigestV
 
 | What | URL / value |
 |---|---|
-| Repository | **https://github.com/unifyWeb3/plaque** — public, `main`, 14+ commits, all inside Oct 14 – Nov 6 |
+| Repository | **https://github.com/unifyWeb3/plaque** — public, `main`, 16 commits at baseline + the audit commits, all inside Oct 14 – Nov 6 |
 | Frontend | **https://plaque-oxunify.vercel.app** — public (deployment protection deliberately off) |
 | Vercel project | `plaque` (`prj_1iXdgZBbnkDn67Mgcsrcp2aj92Nk`, scope `oxunify`) |
 | Explorer | https://node-console.portaldot.dev |
@@ -184,9 +185,9 @@ tx, the `Claimed` event for `unify`, and `handles: 1`.
 |---|---|
 | The deployed bytecode is the committed source | `eth_getCode` keccak = fresh-compile keccak (`npm run verify:live`, first check) |
 | A zero-balance user can claim | the live claim tx + the storage slot + the claimant's 0 balance |
-| The signature check works on this runtime | the `eth_call` matrix (valid accepted; tampered / wrong-address / empty-handle refused) |
+| The signature check works on this runtime | the `eth_call` matrix (valid accepted; tampered / wrong-address / zero-address refused) |
 | The registry is readable by anyone | `eth_getStorageAt` and `eth_getLogs` through the public RPC, pinned to a block |
-| The SDK and the contract agree | 21 unit tests (16 readable + 5 lite, including the differential suite) |
+| The SDK and the contract agree | 33 tests (16 readable + 7 lite + 7 consistency + 3 relayer) |
 | The mechanic is reproducible locally | `npm run demo` (labelled local chain, `evidence/local-demo.txt`) |
 | The UI works | browser QA at 390×844 and 1280×900 (`evidence/qa/`) |
 | The BLOCK-opcode limitation is real | two probe transactions, plus the failed claims on the first build |
@@ -203,4 +204,25 @@ tx, the `Claimed` event for `unify`, and `handles: 1`.
 | The dashboard never fetched the chain when the input was empty | Fixed: it always fetches |
 | The research notes named the profiles and the competitor repositories | Rewritten to describe them by function only; the sweep enforces "no third-party handles" |
 | The `eth_call` dependency in the chain reader | Removed: the dashboard reads `eth_getStorageAt` + `eth_getLogs` and pins every read to a block |
-| The relayer's gas limit (2e13) was too small for the storage deposit | Fixed: sized from the sponsor's balance, with an explicit "needs ~4 tPOT" refusal when it cannot cover a claim |
+| The relayer's gas limit (2e13) was too small for the storage deposit | Fixed: a **fixed** 1.3e14 limit (never the whole sponsor balance), with an explicit "needs ~4 tPOT" refusal and a nonce queue |
+
+
+## 12. Hostile audit decisions (2026-10-24)
+
+| # | Decision | Reason / evidence |
+|---|---|---|
+| A1 | Pin per-contract build settings and canonical source keys in `scripts/build-config.mjs` | `npm run compile` now reproduces all four deployed hashes exactly; the old defaults produced 1085/995/255-byte artifacts (baseline F2) |
+| A2 | Make `verify:live` secret-free; derive the expected claimant from the public config; use an ephemeral key for the signature matrix | The clean clone crashed on `secrets/claimant.key`; with a random key it failed 3 checks (baseline F1) |
+| A3 | Treat the zero address as “no owner” in `readOwner` and `deriveHandleState` | The dashboard showed every free handle as `taken` and disabled the claim (baseline F3) |
+| A4 | Scan events from the deployment block, not `block - 20000`; fail closed if the range is unavailable | The live claim will fall out of a rolling window (baseline F5) |
+| A5 | Keep the hosted app honest: no sponsor key, no transaction sent; the button says “Sign claim” and explains the payload | The old copy implied the app could submit (F4) |
+| A6 | Relayer: verify the signature off chain, reject non-canonical/zero handles and taken slots, fixed 1.3e14 gas limit, serialize nonces, cap pending, allowlist origins | Prevents a forged/taken claim from costing gas and a drive-by browser request from draining the sponsor |
+| A7 | Document the lite limits instead of claiming parity: no release/window, zero handle accepted by the contract, payable fallback with no withdraw, no gas-price field | The old README/DESIGN/deck claimed “same event/semantics” and an “empty handle refused” check |
+| A8 | Do **not** redeploy | The deployed runtime is byte-for-byte reproducible from the committed source after A1; a redeploy would need ~4.29 tPOT of gas-limit cover, a new address and a check-in addendum, with no security benefit. The remaining limits are byte-size trade-offs, not exploitable fund losses. |
+| A9 | Keep the submitted check-in text and add an audit addendum | The check-in is a submitted artifact; the addendum corrects the two changed counts (33 tests, zero-address check) without rewriting history. |
+| A10 | Keep the `audit-baseline` tag local and never force-push; commit fixes normally | The submitted state is evidence; history is additive. Baseline is `23f4067`. |
+| A11 | Do not pivot after the competitor scan; reposition honestly | A public ENS-style `.pot` name service exists and is broader. Plaque's defensible claim is the live, measured sponsored write plus reproducibility, not novelty. |
+| A12 | Mirror the public config inside `web/lib/plaque-config.json` | Vercel's project root is `web`; files above it are not uploaded. The mirror is byte-identical and `tests/consistency.test.mjs` fails on drift. |
+| A13 | Clean-clone workaround: root `npm install` (not `npm ci`) and web `npm ci` | Root lockfile drift is a real finding; web lockfile is in sync and Vercel uses it. |
+| A14 | The demo video is a human blocker | The event requires it; no video exists. The deck and `submission/DEMO-SCRIPT.md` are ready, but the recording is not. |
+| A15 | Deploy the existing Vercel project once after the push, only if the app build is green | The hosted app was stale and showed the free-handle bug; the local production build and QA now pass. No contract redeploy. |

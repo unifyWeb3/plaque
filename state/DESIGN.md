@@ -1,175 +1,145 @@
 # Stage 3 — Design (Plaque)
 
-**Product:** Plaque — the sponsored handle registry for Portaldot. Anyone claims an on-chain name for free;
-a sponsor pays the gas; the record is permanent, verifiable, and readable by anyone through the public RPC.
+> **Audit note (2026-10-24):** this file was rewritten to describe the code that is actually
+> deployed. The earlier version described `Plaque.sol` (a validity window, a claim counter, a
+> `gasPrice`/`at` event and a release button) as if it were the live product. Those features are
+> **not** in the deployed `PlaqueLite`; the differences are called out below. See
+> `state/AUDIT-BASELINE.md` for the findings and `README.md` for the current public claims.
 
-**Track:** 4 · Ecosystem DApps (consumer-facing application), with a middleware substrate that also belongs to
-track 1 · Modular Cloud & Middleware.
+**Product:** Plaque — a sponsored handle registry for the Portaldot V3 testnet. A user signs a
+claim; a sponsor submits it and pays the chain fee and storage deposit. The binding is public and
+readable through the RPC.
+
+**Track:** 4 · Ecosystem DApps (consumer-facing application).
 
 ---
 
-## 1. Architecture and component responsibilities
+## 1. Components
 
 | Component | Where | Responsibility |
 |---|---|---|
-| `Plaque.sol` | Portaldot V3 testnet EVM (pallet-revive) | Binds a 32-byte handle key to an address; verifies the claimer's ECDSA signature; refuses taken handles; lets the owner release; emits the sponsor + gas price for every claim |
-| `packages/plaque-sdk` (in `web/lib/`) | Browser + Node | Canonical handle normalisation, digest construction, ABI, and the **pure state function** that drives the UI |
-| Relayer (`scripts/relayer.mjs`) | Operator's machine | Submits a signed claim on the sponsor's behalf, paying the gas. Never sees the user's key; never fabricates a claim (the contract verifies the signature) |
-| `web/` (Next.js) | Vercel | Homepage (pitch + live proof) and dashboard (live registry, claim flow, sponsored + self-sponsored paths) |
+| `PlaqueLite.sol` | Portaldot V3 testnet EVM, `0x5432e6b8…b685` | **Deployed.** Fallback-only assembly: verifies an EIP-191 signature over `(1, handle, who, chainId, contract)`, stores `ownerOf[handle] = who`, emits `Claimed(handle, who, sponsor)`. No release, no window, no gas-price field. |
+| `Plaque.sol` | First deployment, `0xa0e58d0c…63d6` | Readable reference. Uses `block.chainid` and `block.timestamp`; every claim reverts on this runtime. Kept as evidence, not as the product. |
+| `PlaqueV2.sol` | Not deployed | Readable, chain-compatible: constant chain id, no window, `release`, four-argument `Claimed` event with `gasPrice`. Its code deposit (~74.5 tPOT) exceeded the funded balance. |
+| `web/lib/plaque.js` | Browser + Node | Handle normalisation, both digest builders, ABI, refusals and the pure state function. |
+| `scripts/relayer.mjs` | Operator machine | Verifies the claim off chain, checks the handle is free, uses a fixed gas limit, serialises nonces and submits. Never sees the claimant key. |
+| `web/` | Vercel | Homepage (pitch + live reads) and dashboard (live registry + claim payload). The hosted app has no sponsor key; it does not send a transaction. |
 
-### Data flow of one sponsored claim
-1. The user types a handle in the dashboard. The SDK normalises it (`lowercase`, `trim`, `[a-z0-9._-]`,
-   3–31 bytes) and produces the 32-byte key (UTF-8, zero-padded).
-2. The SDK builds the claim digest (see §3) and the browser asks the user's wallet to sign it
-   (`personal_sign` over the 32-byte digest). **The user spends nothing and signs nothing but a message.**
-3. The signed claim is handed to a sponsor (the relayer) as a JSON payload.
-4. The relayer signs an ordinary EVM transaction with the sponsor key and calls `claim(handle, who, v, r, s,
-   validUntil)` on the contract. The sponsor pays the gas.
-5. The contract recomputes the digest from its own calldata, recovers the signer, and refuses unless
-   `signer == who`. It then stores `ownerOf[handle] = who` and emits
-   `Claimed(handle, who, sponsor=msg.sender, gasPrice=tx.gasprice, at=block.timestamp)`.
-6. The dashboard reads `ownerOf(handle)` and the claim events, and shows the new entry.
+## 2. Data flow of one sponsored claim
 
-## 2. What is on-chain vs off-chain
+1. The user types a handle. `normalizeHandle` lowercases/trims it and enforces 3–31 bytes of
+   `[a-z0-9._-]`; `handleKey` produces the 32-byte UTF-8 key, zero-padded.
+2. The SDK builds the digest and the wallet signs it with `personal_sign`. The user sends no
+   transaction and pays nothing.
+3. The signed claim goes to a sponsor. The relayer validates the shape, canonical handle and
+   signature **before** spending gas, checks the storage slot is free, then submits.
+4. `PlaqueLite` recomputes the digest, checks `ecrecover == who`, checks the slot is empty, writes
+   `ownerOf[handle] = who` and emits the event. The sponsor pays.
+5. The dashboard reads `eth_getStorageAt` for a single handle and `eth_getLogs` from the deployment
+   block for the list. It does not use `eth_call` for reads (the node rejects unfunded callers).
 
-**On-chain (Portaldot V3 testnet):** the handle→owner binding, the claim counter, and the claim/release events
-(including the sponsor address and the gas price the sponsor paid). The event log is the public ledger of
-*who sponsored Portaldot's growth* and *what it cost*.
+## 3. On-chain vs off-chain, and custody
 
-**Off-chain (never trusted, only relayed):** the signed claim payload (it is self-authenticating — the contract
-checks it), the relayer, and the web UI. The sponsor pays gas directly to the chain; **no contract ever holds
-user funds and no third party ever custodies anything** — there is no escrow, no bond, no arbitration and no
-dispute resolution anywhere in the design.
+**On-chain:** the handle→owner binding and the `Claimed` events (handle, who, sponsor). The lite
+event does **not** record the gas price or a timestamp; those are in the transaction receipt/block.
 
-**Trust model, stated plainly:**
-- The contract trusts **nobody** except the ECDSA signature of the claimed address, checked against a digest
-  that binds handle, address, chain id, contract address and expiry.
-- The relayer is **untrusted**: it can drop a claim, reorder claims, or fail to pay — it cannot forge one, and
-  it cannot bind a name to somebody else's address. A dropped claim is recoverable because the claim is just a
-  signed message that anyone can re-submit before `validUntil`.
-- The sponsor is the gas payer, nothing more. The UI never claims the sponsor "paid for the name": the sponsor
-  paid **gas**; the name is free.
-- The frontend is **untrusted** by the contract; the contract is the only source of truth for state, and the
-  dashboard re-reads it from the chain.
-- There is **one** trusted key in the whole system: the sponsor's relayer key, which only ever pays gas. It is
-  held in a gitignored file with `chmod 600`, is never in the frontend, never in a commit and never in the
-  Vercel configuration.
+**Off-chain:** the signed payload, the relayer and the UI. They are untrusted; the contract checks
+the signature.
 
-## 3. Contract interface
+**Custody:** there is no escrow, bond, arbitration or name fee. The sponsor pays the chain fee and
+the storage deposit. The lite fallback is `payable` but has no withdraw, so a claim must send value
+0; do not send tPOT to the contract. The sponsor key is the only key in the system; if leaked, its
+balance can be drained, but it cannot forge a claim or choose a recipient.
 
-```solidity
-struct Entry — not used; the registry is intentionally one mapping deep.
+## 4. Contract interfaces
 
-mapping(bytes32 => address) public ownerOf;   // handle key -> owner
-uint256 public claimCount;                     // number of claims ever made
-event Claimed(bytes32 indexed handle, address indexed who, address indexed sponsor,
-              uint256 gasPrice, uint256 at);
-event Released(bytes32 indexed handle, address indexed who);
-
-function claim(bytes32 handle, address who, uint8 v, bytes32 r, bytes32 s, uint64 validUntil) external;
-function release(bytes32 handle) external;
-```
-
-**Claim digest** (identical in Solidity, TypeScript and the tests):
+**Deployed `PlaqueLite` (no ABI, no selector):**
 
 ```
-TAG      = keccak256("Plaque Claim v1")            // 32-byte constant, verified by a test
-digest   = keccak256(
-              TAG
-           ‖ handle       (32 bytes)
-           ‖ who          (20 bytes)
-           ‖ validUntil   (8 bytes, big-endian)
-           ‖ chainId      (8 bytes, big-endian)
-           ‖ contract     (20 bytes)
-         )
+calldata = handle (32) ‖ who (32, address right-aligned) ‖ v (32) ‖ r (32) ‖ s (32)   // 0xa0 bytes
+slot     = keccak256(handle ‖ bytes32(0))
+event    = Claimed(bytes32 indexed handle, address indexed who, address indexed sponsor)
+digest   = keccak256(abi.encode(bytes32(1), handle, who, bytes32(420420777), bytes32(address(this))))
+hash     = keccak256("\x19Ethereum Signed Message:\n32" ‖ digest)
 ```
 
-The signature is an EIP-191 `personal_sign` over the 32-byte digest. The contract verifies
-`ecrecover(keccak256("\x19Ethereum Signed Message:\n32" ‖ digest), v, r, s) == who` and, as a fallback for
-wallets that sign raw digests, also accepts `ecrecover(digest, v, r, s) == who`.
+**Readable builds:** `Plaque.sol` adds `validUntil` and uses `block.chainid`/`block.timestamp`
+(hence unusable here). `PlaqueV2.sol` drops the window and uses the same five-field digest as the
+lite build, but has an ABI and a four-argument event with `gasPrice`.
 
-**Refusals (each with a positive control in the test suite):**
-| Condition | Error |
+**Refusals, as implemented:**
+
+| Condition | Lite behaviour |
 |---|---|
-| handle is all zero | `empty handle` |
-| `who` is the zero address | `zero address` |
-| `block.timestamp > validUntil` | `claim expired` |
-| the handle is already owned | `handle taken` |
-| the recovered signer ≠ `who` | `bad signature` |
-| `release` by a non-owner | `not the owner` |
+| calldata length ≠ 0xa0 | revert |
+| `who == 0` or dirty upper 96 bits | revert |
+| handle already owned | revert |
+| recovered signer ≠ `who` | revert |
+| handle == 0 | **accepted** if validly signed (known limit; app and relayer reject it) |
+| expired claim | no window; a signed claim can be submitted until the name is taken |
+| release | no `release` function; a `release` call reverts |
+| value sent | accepted by the payable fallback and stuck (no withdraw) |
 
-**Why the digest binds these fields:** the handle and the address are what is being asserted; `validUntil`
-stops a captured signature from being replayed later; `chainId` and the contract address stop a signature from
-being replayed on another chain or another contract.
+## 5. UI state function
 
-## 4. UI state function (single source of truth)
+`deriveHandleState({ owner, connected, handle, now, validUntil, supportsRelease })` is the single
+pure function used by the dashboard. It treats the zero address as “no owner” (the bug found in the
+baseline), returns `needs-wallet` when no wallet is connected, `available` for a free handle with a
+wallet, `taken` for an owned handle, and `owned` when the connected wallet is the owner.
+`supportsRelease` defaults to `false`; the deployed lite build has no release. The dashboard does not
+offer a release action.
 
-`deriveHandleState(entries, handle)` — one pure function in `web/lib/plaque.ts`, used by every screen:
+## 6. Threat model
 
-| Input state | Output | UI |
-|---|---|---|
-| `ownerOf(handle) == 0` | `{ status: 'available', canClaim: true }` | claim button enabled |
-| `ownerOf(handle) != 0` and `owner == connected wallet` | `{ status: 'owned', canClaim: false, owner }` | "you own this" + release button |
-| `ownerOf(handle) != 0` and `owner != connected wallet` | `{ status: 'taken', canClaim: false, owner }` | claim button **disabled** — the contract would refuse |
-| no wallet connected | `{ status: 'needs-wallet', canClaim: false }` | connect prompt |
-
-The function is unit-tested against the contract's own refusal list (parsed from `contracts/Plaque.sol`) and
-against the live contract on ganache, so the UI cannot offer an action the contract rejects.
-
-## 5. Threat model
-
-| Threat | Mitigation |
+| Threat | Mitigation / residual risk |
 |---|---|
-| Relayer binds a name to a third party | Signature recovered on-chain; `signer != who` → `bad signature` |
-| Signature replay (same chain) | `validUntil` in the digest; the handle can only be claimed once |
-| Signature replay (other chain / other contract) | `chainId` and `address(this)` in the digest |
-| Handle front-running | Only the address's own key can bind it; a captured signature is bounded by `validUntil` |
-| Invisible name squatting (a second key for the same display name) | Impossible without the owner's own signature: a squatter would have to sign for the squatted key |
-| Relayer censorship | The claim is a portable signed message; any sponsor can re-submit it before `validUntil` |
-| Sponsor takes the user's money | The sponsor only pays gas; the contract moves no user funds and holds none |
-| UI lying about state | One pure state function, unit-tested against the contract's refusal list and the live contract |
-| Deployed code ≠ repository code | Byte-for-byte comparison of `eth_getCode` with a fresh compile of the committed source, with keccak hashes recorded |
+| Relayer binds a name to a third party | On-chain `ecrecover` must equal `who`. |
+| Replay of the same signature | The handle can be claimed once. There is no nonce or deadline; a signed claim can be held and submitted later, but it can only bind the signer's own address. |
+| Replay on another chain/contract | Chain id and contract address are in the digest. |
+| Front-running / squatting | Anyone can submit a valid claim; a squatter must sign for their own address and pay ~3.87 tPOT per name. A claim-then-confirm grace period is roadmap. |
+| Relayer drain | Off-chain signature validation, free-slot check, fixed 1.3e14 gas limit, nonce queue and a small pending cap. The relayer binds to localhost and rejects unknown browser origins. |
+| Sponsor key leak | It can drain the sponsor balance; it cannot forge a claim. Key is `0600`, gitignored, never in the frontend. |
+| UI offers a rejected action | One pure state function; the zero-owner bug is fixed and tested; the hosted app does not claim to submit. |
+| Deployed code ≠ source | `scripts/build-config.mjs` pins per-contract settings and canonical source keys; `verify:live` compares raw `eth_getCode`; the consistency test checks all four hashes. |
+| Event/indexer retention | The dashboard scans from the deployment block, not a 20k window; if the node prunes the range, the API errors rather than showing an empty registry. |
 
-## 6. Deployment plan
+## 7. Build and deployment
 
-- Chain: **Portaldot V3 testnet**, EVM RPC `https://test-evm-rpc-v3.portaldot.dev`, chain id **420420777**.
-- Deployer: the eth-derived account `0xfbDf159DcA07f0ae4F47da633B468e512f297E25`
-  (AccountId32 `H160 ‖ 0xEE×12`, statelessly mapped, normal secp256k1 key → works with MetaMask and ethers).
-- Compiler: **solc-js 0.8.28**, `evmVersion: paris`, optimizer on, `metadata.bytecodeHash: none` — the chain
-  charges a storage deposit of ≈0.157 tPOT per byte of code, so code size is a first-class constraint.
-- **Gas limit rule (measured, not guessed):** Portaldot derives the storage-deposit limit from the transaction's
-  gas limit, so the deploy transaction must use a gas limit large enough to cover the deposit
-  (`gasLimit × gasPrice ≳ deposit`) while the pool requires `balance ≥ gasLimit × maxFeePerGas`. The deploy
-  script computes both bounds and fails closed if they cannot be satisfied.
-- After deployment: retrieve the bytecode, compare it with a fresh compile, run the legitimate path
-  (claim → event → read back), pin the reads to an explicit block number, and record every hash.
+- Chain: Portaldot V3 testnet, EVM RPC `https://test-evm-rpc-v3.portaldot.dev`, chain id
+  `420420777`.
+- Compiler: solc-js 0.8.28, `evmVersion: paris`.
+- Per-contract settings (recorded in `scripts/build-config.mjs`):
+  - `Plaque`: `viaIR: true`, runs 1, `metadata.bytecodeHash: none`;
+  - `PlaqueV2`: `viaIR: true`, runs 1, `none`;
+  - `PlaqueLite`: `viaIR: false`, runs 200, `ipfs` (canonical source key `/root/hack/contracts/PlaqueLite.sol`);
+  - `Gate`: `viaIR: false`, runs 1, `none`.
+- Deploy script computes the deposit-driven gas window from the balance and the measured rate and
+  fails closed. A deployment needs a funded sponsor; the current sponsor holds 0.87 tPOT, below the
+  ~4.29 tPOT gas-limit requirement for one claim.
+- After deployment: fetch the code, compare the raw keccak (and the metadata-stripped runtime), run
+  the claim, read the event and storage at a pinned block, and record the hashes.
 
-## 7. Test plan
+## 8. Test plan (33 tests)
 
-Local (ganache, pure-JS EVM) — `node --test`:
-1. the full legitimate path: claim a free handle succeeds, the owner is stored, the event fires;
-2. every refusal with a **positive control** (a valid claim succeeds, each invalid variant fails with the
-   expected reason, and the valid case is re-run to prove the refusal was not caused by an unrelated error);
-3. signature binding: a signature for handle A does not verify for handle B; a signature for another chain id,
-   another contract or an expired window does not verify;
-4. access control: only the owner can release; a non-owner release is refused;
-5. duplicate/terminal states: claiming a taken handle is refused; after release it can be re-claimed;
-6. malformed input: zero handle, zero address, empty/invalid signature, `v` outside {27,28};
-7. the UI state function against the contract's parsed refusal list;
-8. the digest construction against the Solidity implementation (same bytes, same hash) — the cross-check that
-   makes the client/contract pair safe.
+- `tests/plaque.test.mjs` (16): readable build, legitimate path, refusals with positive controls,
+  digest vs Solidity, release access control, UI state, refusals list, unit conversion.
+- `tests/plaque-lite.test.mjs` (7): size and bytecode, shared digest with V2, binding/event/zero-cost
+  claimant, refusals, event topic, cross-chain/cross-contract/no-release, zero-key limitation.
+- `tests/consistency.test.mjs` (7): config, SDK constants, docs, compiler settings, bytecode hashes,
+  address allowlist.
+- `tests/relayer.test.mjs` (3): valid claim, forged/cross-chain/zero/non-canonical refusals, fixed
+  gas limit.
 
-Live (Portaldot V3 testnet): the Stage-0 gate script already proves deploy → bytecode → call → receipt →
-event → pinned state. The product deploy repeats it for `Plaque.sol` and additionally claims a handle and reads
-it back at a pinned block.
+Live: `npm run verify:live` — 10 checks against one pinned block, no secret and no funds.
 
-## 8. Claims the product may and may not make
+## 9. Claims the product may and may not make
 
-**May claim:** every handle is bound to the address that signed it; a claim is sponsored (the sponsor paid the
-gas, the user paid nothing); the sponsor and the gas price of every claim are public in the event log; the
-registry can be read by anyone through the public RPC; the deployed bytecode is identical to a fresh compile of
-the committed source; the cost figures quoted are measured from real receipts.
+**May claim:** every bound handle is owned by the address that signed for it; a claim is sponsored
+(the user paid nothing); the sponsor is public in the event; the registry is readable from the RPC;
+the deployed bytecode matches the committed source under the recorded build settings; the cost
+figures come from receipts; the hosted app reads the chain and produces the signed payload.
 
-**May not claim:** that the relayer is trustworthy or available; that a name is reserved off-chain; that the
-sponsor "owns" the name or the user's account; that the registry replaces the Portaldot `Identity` pallet
-(it is a *handle*, not a legal identity); that the product is audited; that anything works on mainnet.
+**May not claim:** that the hosted app submits a transaction; that there is a release, a window or a
+gas-price field in the deployed event; that the lite contract rejects the zero handle; that the
+sponsor is trustworthy or always available; that `MetaTx` is used; that the product is audited; that
+it works on mainnet.

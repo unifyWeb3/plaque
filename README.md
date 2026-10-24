@@ -16,7 +16,7 @@ Built for the **Portaldot Hacker House 2026** — Track 4, *Ecosystem DApps*.
 | Explorer | <https://node-console.portaldot.dev> |
 | Frontend | `web/` (Next.js 15, App Router) — live at **https://plaque-oxunify.vercel.app** |
 | Repository | **https://github.com/unifyWeb3/plaque** |
-| Tests | `npm test` — **21 tests, 21 pass, exit 0** |
+| Tests | `npm test` — **33 tests, 33 pass, exit 0** |
 
 ---
 
@@ -28,7 +28,7 @@ Every person who arrives at the Portaldot ecosystem is therefore stuck at zero: 
 name, register for a program, or leave any trace of themselves on the chain, and no dApp can ask them
 to buy gas before they use it.
 
-The audience is exactly that group: people joining the Portaldot ecosystem (the ~143 hackers
+The audience is exactly that group: people joining the Portaldot ecosystem (the ~168 hackers
 registered for this hackathon, ecosystem newcomers, and builders shipping their first dApp) — plus the
 operators who want a permissionless directory instead of a hand-maintained list.
 
@@ -91,9 +91,10 @@ Both screenshots come from <https://plaque-oxunify.vercel.app> and are read stra
 * **Off chain (untrusted, only relayed):** the signed claim payload, the relayer, and the web UI. The
   claim is self-authenticating — the contract verifies it — so a sponsor can drop, reorder or refuse a
   claim but never forge one.
-* **One trusted key:** the sponsor's relayer key. All it can do is pay. It lives in a gitignored file
-  with `0600` permissions and is never in the frontend, a commit, a build log or a deployment
-  configuration.
+* **One trusted key:** the sponsor's relayer key. In the protocol all it can do is pay; if it leaks,
+  its balance can be drained, but it cannot forge a claim or choose a recipient. It lives in a
+  gitignored file with `0600` permissions and is never in the frontend, a commit, a build log or a
+  deployment configuration.
 
 ## 4. The contracts: readable reference vs. deployed build
 
@@ -107,13 +108,15 @@ The chain imposes two hard constraints, both measured on the testnet:
 | Build | Size | Role | Status |
 |---|---|---|---|
 | `contracts/Plaque.sol` | 786 B | the readable reference; `block.chainid` inside the digest | deployed at `0xa0e58d0c…63d6` (block 132033); **cannot complete a claim** because of constraint 1 |
-| `contracts/PlaqueV2.sol` | 741 B | readable, chain-compatible: constant chain id, sponsor-enforced window, `release` | **not deployed** — its deposit (~71 tPOT) exceeds the funded balance |
-| `contracts/PlaqueLite.sol` | **302 B** | the chain-compatible build in a fallback-only assembly body: same digest, same storage slot, same event | **deployed and claimed live** |
+| `contracts/PlaqueV2.sol` | 741 B | readable, chain-compatible: constant chain id, no validity window, `release` | **not deployed** — its deposit (~74.5 tPOT) exceeds the funded balance |
+| `contracts/PlaqueLite.sol` | **302 B** | the chain-compatible build in a fallback-only assembly body: same digest and storage slot; emits the three-address `Claimed` event | **deployed and claimed live** |
 
-`PlaqueLite` is not a different product: it has the same digest, the same
-`keccak256(handle ‖ 0)` storage slot that a Solidity mapping at slot 0 uses, and the same
-`Claimed(bytes32,address,address)` event, with every parameter indexed. `tests/plaque-lite.test.mjs`
-runs the readable build and the lite build against the same signatures and asserts they agree. Its
+`PlaqueLite` is not a different product: it has the same digest and the same
+`keccak256(handle ‖ 0)` storage slot that a Solidity mapping at slot 0 uses. Its
+`Claimed(bytes32,address,address)` event has every parameter indexed; the readable build also records
+`gasPrice` in a four-argument event, so the two event signatures are deliberately different.
+`tests/plaque-lite.test.mjs` runs both builds against the same signatures and asserts the binding and
+storage agree; it also records where the lite build is narrower (no `release`, no window). Its
 calldata has no selector — five 32-byte words, `handle ‖ who ‖ v ‖ r ‖ s` — because four bytes of
 selector and an ABI dispatcher are 30+ bytes of code that this chain charges for.
 
@@ -150,7 +153,7 @@ Everything that is on chain here can be re-checked by anyone:
 
 ```
 $ npm run verify:live
-Plaque live verification - block 167382
+Plaque live verification - block 171462
 
   PASS  deployed code equals the committed build  302 bytes, keccak 0x8a952eb82ff4a318...
   PASS  ownerOf("unify") is the zero-balance claimant  0xd35404a86f825741ba8a65a31eb8ca1d52315fe6
@@ -161,7 +164,7 @@ Plaque live verification - block 167382
   PASS  a valid signature is accepted (eth_call)
   PASS  a tampered signature is refused
   PASS  a signature for another address is refused
-  PASS  an empty handle is refused
+  PASS  a zero address is refused
 
 ALL CHECKS PASSED
 ```
@@ -174,23 +177,33 @@ ALL CHECKS PASSED
 * The sponsor is untrusted: it can refuse to pay, reorder claims or go offline. It cannot forge a
   claim and it cannot bind a name to somebody else's address. A dropped claim is recoverable: the
   claim is a signed message that anybody can re-submit.
-* No contract ever holds user funds. There is no escrow, no bond, no arbitration and no dispute
-  resolution anywhere in the design. The only value that moves is the chain's own storage deposit,
-  paid by the sponsor to the runtime.
+* No contract is designed to hold user funds. There is no escrow, no bond, no arbitration and no
+  dispute resolution anywhere in the design. The only value that moves is the chain's own storage
+  deposit, paid by the sponsor to the runtime. The lite fallback is `payable`; a claim must send
+  value 0, and there is no withdraw, so do not send tPOT to the contract.
 * The frontend is untrusted by the contract; the contract is the only source of truth, and the
   dashboard re-reads it from the chain.
 * The hosted frontend has **no** relayer: secrets do not belong in deployment configuration, so the
-  deployed app reads the chain, produces the exact signed payload and can submit it from a wallet that
-  holds tPOT. Running a sponsor is a local operator job (`npm run relayer`).
+  deployed app reads the chain and hands the user the exact signed payload. It does **not** send a
+  transaction itself; a sponsor (or the user's own funded wallet) must submit it. Running a sponsor is
+  a local operator job (`npm run relayer`).
 * A *handle* is a name, not a legal identity: it is not a replacement for Portaldot's `Identity`
   pallet.
 * Not audited. Testnet only. No mainnet deployment. The gas and deposit figures are measured on the V3
   testnet and will differ on mainnet.
-* A gasless claim can be **griefed**: anybody can bind a free handle to an address nobody controls.
+* A gasless claim can be **squatted**: anybody can bind a free handle to an address they control.
   Here the deposit makes it cost **≈3.87 tPOT** per squatted name, which is a meaningful deterrent; a
-  claim-then-confirm grace period (roadmap) would remove it entirely.
+  claim-then-confirm grace period (roadmap) would remove it entirely. A signature cannot bind a name
+  to an address nobody controls.
 * The lite build has no `release` and no validity window. Both are deliberate: they are bytes the
-  chain would charge for, and neither is needed for the demo. The readable `PlaqueV2.sol` keeps them.
+  chain would charge for, and neither is needed for the demo. The readable `PlaqueV2.sol` keeps
+  `release`; neither deployed build has a window.
+* **What this is not:** a full name service. There is no resolver, reverse lookup, profile record,
+  transfer, renewal or (in the deployed build) release. A public ENS-style `.pot` naming service
+  already covers that broader surface; Plaque does not claim novelty in the category. It claims a
+  live, measured sponsored write and a reproducible 302-byte deployment.
+* **Integration:** `docs/INTEGRATION.md` has dependency-free TypeScript readers for the owner
+  mapping and the `Claimed` events.
 
 ## 6. Install and run
 
@@ -199,7 +212,7 @@ git clone https://github.com/unifyWeb3/plaque.git
 cd plaque
 npm install                     # solc-js, ethers, ganache, @polkadot/api
 npm run compile                 # compile the contracts with solc-js into build/
-npm test                        # 21 unit tests on ganache
+npm test                        # 33 unit tests on ganache
 npm run verify:live             # read-only verification against the live testnet
 
 cd web
@@ -237,8 +250,8 @@ No secret is ever needed to build or serve the frontend.
 
 ```
 $ npm test
-# tests 21
-# pass 21
+# tests 33
+# pass 33
 # fail 0
 $ echo $?
 0
@@ -264,14 +277,21 @@ positive control:
 15. every contract error is described by the SDK;
 16. the wei → tPOT conversion matches the chain's ratio.
 
-**`tests/plaque-lite.test.mjs` (5 tests)** — the deployed build:
+**`tests/plaque-lite.test.mjs` (7 tests)** — the deployed build:
 
 1. the runtime is ≤320 bytes and byte-identical to the artifact;
 2. the lite build and the Solidity build accept the same digest scheme and the same signature;
 3. a claim binds the handle, emits the four-topic event, and the claimant pays nothing;
 4. refusals: a taken handle, a wrong signer, the zero address, dirty address bits, short calldata —
    all checked with `eth_call` against the same state as a positive control;
-5. the event signature matches what a decoder expects.
+5. the event signature matches what a decoder expects;
+6. a signature bound to another chain or contract is refused, and the lite build has no `release`;
+7. a documented limitation: the lite contract accepts the zero key if validly signed (the app and
+   relayer refuse it; fixing it needs a redeploy).
+
+**`tests/consistency.test.mjs` (7 tests)** — config, docs, bytecode and address consistency.
+
+**`tests/relayer.test.mjs` (3 tests)** — pre-flight signature, canonical-handle and gas-limit rules.
 
 Browser QA (`web/scripts/qa-browser.mjs`, Playwright/Chromium): screenshots at 390×844 and 1280×900,
 no horizontal overflow, an `h1` on every screen, a visible focus outline on the first tab stop, and no
@@ -319,19 +339,21 @@ contracts/     Plaque.sol (reference, deployed first) · PlaqueV2.sol (readable,
                PlaqueLite.sol (deployed) · Gate.sol, Probe*.sol (the diagnostics behind section 4)
 web/           Next.js app: homepage, dashboard, chain reader, the shared SDK, the browser QA script
 scripts/       compile · deploy · claim · verify-live · relayer · chain probes (read-only except deploys)
-tests/         the 21 unit tests
+tests/         the 33 unit tests
 state/         the research, the decision, the design, the chain limitation, the project memory
 submission/    the BUIDL text, the demo script, the pitch outline, the check-in, the checklist
+docs/          integration snippets for reading the registry and verifying a claim
 ```
 
 ## 9. The one thing the operator can still add
 
 The live registry works, and `npm run verify:live` re-proves it. What is *not* funded is volume: the
-sponsor wallet holds **0.87 tPOT**, and one claim costs **≈3.87 tPOT** because of the chain's storage
-deposit. A faucet top-up of ~40 tPOT would pay for ten more live claims in the demo:
+sponsor wallet holds **0.87 tPOT**. A claim needs a **4.29 tPOT balance** to cover the fixed
+`1.3e14` gas limit (the pool requires `balance >= gasLimit × gasPrice`), of which **≈3.87 tPOT** is
+actually spent on the storage deposit. A faucet top-up of ~40 tPOT would pay for about nine more
+live claims in the demo:
 
-> **Discord → <https://discord.gg/portaldot> → support ticket or DM admin `@titus242471`**
-> (DoraHacks admin: `@Stella707827`), with
+> **Discord → <https://discord.gg/portaldot> → support ticket**, with
 > **(a)** a screenshot of the hackathon registration and
 > **(b)** the address **`5Hkx9RshKpqfvttQFTc5Ze7JbuunB6FP488X3eBzGPY9WYTf`**.
 
@@ -343,8 +365,8 @@ Nothing in the submission depends on it: the claim in the header is already live
 * **A real sponsor service**: a hosted relayer with a per-developer budget, settled in the chain's
   native `Assets` pallet so sponsorship itself is on chain.
 * **Handle transfers and release**: a signed handover, so a name can move without losing its history.
-* **A readable full build on a chain that permits it**: `PlaqueV2.sol` is committed and tested for
-  when the runtime supports the BLOCK opcodes or the deposit budget allows it.
+* **A readable full build when the deposit budget allows it**: `PlaqueV2.sol` already avoids the BLOCK
+  opcodes; it is committed and tested for when the larger code deposit can be funded.
 * **Open the directory**: a public indexer over the `Claimed` events, so other Portaldot apps can
   resolve handles from the RPC.
 * **Mainnet**: the same contract on Portaldot mainnet, with the cost model re-measured.

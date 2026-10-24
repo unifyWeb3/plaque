@@ -50,7 +50,7 @@ npm run verify:live
 
 > The contract trusts nobody except the signature. The sponsor is untrusted: it can refuse to pay or
 > go offline, but it cannot forge a claim and it cannot bind a name to somebody else's address.
-> No contract holds user funds.
+> A claim carries no value; the lite fallback is payable but has no withdraw, so nobody should send tPOT to it.
 
 ## 2:00 — The dashboard, live
 
@@ -60,7 +60,7 @@ npm run verify:live
 > this is the claim that took it, with the sponsor that paid.
 
 **Action:** type `unify` → the pill reads *taken* and the owner is `0xd354…15Fe6`. Then type an
-unused name → *available*, with its 32-byte key. Scroll to the sponsor ledger: one row, with the
+unused name → *needs-wallet* (or *available* once a wallet is connected), with its 32-byte key. Scroll to the sponsor ledger: one row, with the
 transaction link.
 
 ## 2:20 — The honest engineering story
@@ -91,7 +91,7 @@ registry and the ledger update on the next page load.
 ## Commands to reproduce every claim in the script
 
 ```bash
-npm run compile && npm test                      # 21 tests, all passing
+npm run compile && npm test                      # 33 tests, all passing
 npm run demo                                     # the mechanic on a local chain (labelled as such)
 npm run verify:live                              # 10 checks against the live testnet
 node scripts/deploy-any.mjs PlaqueLite           # deploy (needs a funded wallet)

@@ -1,7 +1,7 @@
 # Pre-submission checklist
 
 Based on the verified rules of the Portaldot Hacker House 2026
-(source: the event's `detail` page, checked 2026-10-20). Items that depend on the DoraHacks form are
+(source: the event's `detail` page, checked 2026-10-24). Items that depend on the DoraHacks form are
 marked **form** — the field limits are not published, so the copy is deliberately short.
 
 ## Timing
@@ -19,15 +19,15 @@ marked **form** — the field limits are not published, so the copy is deliberat
 |---|---|
 | Project name | `Plaque` — in `submission/BUIDL.md` |
 | Team members | solo: unify (`@oxunify`) — registered |
-| One-sentence overview | "Claim your name on Portaldot without paying a thing — you sign, a sponsor pays." |
+| One-sentence overview | "Claim your name on Portaldot — you sign, a sponsor pays." |
 | Public GitHub repository | `github.com/unifyWeb3/plaque` — public, a dozen-plus commits, all inside Oct 14 – Nov 6, no bulk commit in the final 24 h |
 | README: complete | done — problem, audience, solution, architecture, trust model, live evidence, deployment details, install/run, tests, the two chain constraints, roadmap |
 | README: deployment instructions | `node scripts/deploy-any.mjs PlaqueLite` (+ the deposit-driven gas-limit rule) |
 | README: project documentation | `state/` — research, decision, design, the chain limitation, the memory log |
-| README: runnable code | `npm install && npm run compile && npm test`; `npm run verify:live`; `cd web && npm install && npm run dev` |
+| README: runnable code | `npm install && npm run compile && npm test` (33 tests); `npm run verify:live` (10 checks, no secret); `cd web && npm install && npm run dev` |
 | README: testnet deployment information | contract `0x5432e6b8…b685`, deployment tx, block 167044, bytecode comparison, the live claim tx, the measured cost |
 | Runnable demo | the deployed app **and** `npm run verify:live` **and** `npm run demo` (local, labelled) |
-| Demo video, ≤3 min, public link | `submission/DEMO-SCRIPT.md` is the shot-by-shot script — **the recording is still to do** |
+| Demo video, ≤3 min, public link | `submission/DEMO-SCRIPT.md` is the shot-by-shot script — **the recording is still to do** (blocking; human action) |
 | Pitch deck, PDF or public link | **`submission/Plaque-pitch-deck.pdf`** — 9 slides, generated from `submission/deck.html` (the one-page summary is `submission/PITCH.md`) |
 | Contract address and transaction hash | in the README, `submission/EVIDENCE.md` and the app |
 
@@ -54,6 +54,7 @@ marked **form** — the field limits are not published, so the copy is deliberat
    `npm run verify:live`.
 3. **Fill the DoraHacks form** — the field limits are not published, so copy the short blocks from
    `submission/BUIDL.md` as they are.
-4. *(optional)* **Top up ≈40 tPOT to `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`** for ~10 more
-   live claims on camera (the sponsor holds 0.87 tPOT; one claim costs ≈3.87 tPOT).
+4. *(optional)* **Top up ≈40 tPOT to `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`** for ~9 more
+   live claims on camera (the sponsor holds 0.87 tPOT; one claim needs a 4.29 tPOT balance and
+   spends ≈3.87 tPOT).
 5. **Submit** — the operator submits; nothing in this repository submits on their behalf.
