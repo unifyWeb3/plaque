@@ -11,8 +11,10 @@ import { Wallet, getBytes, keccak256, concat, zeroPadValue } from 'ethers';
 import { readFileSync, writeFileSync } from 'node:fs';
 import * as rpc from './rpc-lib.mjs';
 import { buildClaimDigestV2, handleKey, handleNameFromKey } from '../web/lib/plaque.js';
+import config from '../config/plaque.json' with { type: 'json' };
+import { claimGasLimit } from './relayer-lib.mjs';
 
-const CHAIN = 420420777n;
+const CHAIN = BigInt(config.chainId);
 const contract = process.argv[2];
 const name = process.argv[3];
 if (!contract || !name) {
@@ -40,14 +42,14 @@ console.log(`         signature ${signature.slice(0, 22)}...${signature.slice(-1
 
 // 2. the sponsor submits it and pays
 const data = concat([key, zeroPadValue(claimant.address, 32), zeroPadValue('0x' + v.toString(16), 32), r, s]);
+// A fixed limit sized for the measured storage deposit; never the whole sponsor balance. The
+// pool also requires balance >= gasLimit * maxFeePerGas, so claimGasLimit refuses early when the
+// sponsor cannot cover this claim.
+const gasLimit = claimGasLimit({ gasPrice: gp, balance: await rpc.getBalance(sponsor.address) });
 const raw = await sponsor.signTransaction({
   type: 2, chainId: CHAIN, nonce: await rpc.getNonce(sponsor.address),
   to: contract, value: 0n, data,
-  // The gas limit also sets the storage-deposit allowance of the transaction, and the pool
-  // requires balance >= gasLimit * maxFeePerGas. The write persists one mapping entry, which
-  // costs a storage deposit on this chain, so the limit is set as high as the sponsor's
-  // balance allows.
-  gasLimit: (await rpc.getBalance(sponsor.address)) * 95n / 100n / gp, maxFeePerGas: gp, maxPriorityFeePerGas: 0n,
+  gasLimit, maxFeePerGas: gp, maxPriorityFeePerGas: 0n,
 });
 const hash = await rpc.rpc('eth_sendRawTransaction', [raw], { retries: 0 });
 console.log(`\nsponsor  tx ${hash}`);

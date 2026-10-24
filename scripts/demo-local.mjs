@@ -11,19 +11,21 @@
 //
 // This runs on ganache because the Portaldot V3 runtime cannot execute the BLOCK-family opcodes
 // (see state/CHAIN-LIMITATION.md). The contract used here is the chain-compatible build
-// (contracts/PlaqueV2.sol): the same source that is ready to deploy to Portaldot once the testnet
-// wallet has the ~71 tPOT the code deposit costs.
+// (contracts/PlaqueV2.sol): the readable source that is ready to deploy to Portaldot once the
+// testnet wallet has the ~74.5 tPOT the code deposit costs. The live deployment uses the
+// 302-byte PlaqueLite build with the same digest and storage slot.
 //
 // This is a LOCAL CHAIN. Nothing here is presented as Portaldot testnet state.
 import { BrowserProvider, Wallet, ContractFactory, Interface, AbiCoder, getBytes, keccak256, concat, zeroPadValue } from 'ethers';
 import { readFileSync } from 'node:fs';
 import { handleKey, handleNameFromKey } from '../web/lib/plaque.js';
+import config from '../config/plaque.json' with { type: 'json' };
 
 const ganacheModule = await import('ganache');
 const ganacheProvider = ganacheModule.provider ?? ganacheModule.default.provider;
 const artifact = JSON.parse(readFileSync('build/PlaqueV2.json', 'utf8'));
 const iface = new Interface(artifact.abi);
-const CHAIN_ID = 420420777n; // the constant inside PlaqueV2.sol
+const CHAIN_ID = BigInt(config.chainId); // the constant inside PlaqueV2.sol
 
 const eip1193 = ganacheProvider({
   logging: { quiet: true },
@@ -141,7 +143,8 @@ console.log('');
 
 const slot = keccak256(concat([key, zeroPadValue('0x', 32)]));
 console.log(`storage slot of the binding: keccak256(handle || 0) = ${slot}\n`);
-console.log('Done. On the Portaldot V3 testnet the same flow uses the same contract; it needs the');
-console.log('testnet wallet funded with ~71 tPOT for the code deposit:');
-console.log('  node scripts/deploy-any.mjs PlaqueV2 && node scripts/claim-plaque.mjs ...');
+console.log('Done. The live 302-byte PlaqueLite build uses the same digest and storage slot.');
+console.log('The readable PlaqueV2 build (741 bytes) needs ~74.5 tPOT of code deposit:');
+console.log('  node scripts/deploy-any.mjs PlaqueV2');
+console.log('The deployed lite claim is in README.md and evidence/claim-lite-unify.json.');
 process.exit(process.exitCode ?? 0);

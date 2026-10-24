@@ -7,7 +7,8 @@ import { readFileSync, writeFileSync, existsSync, chmodSync } from 'node:fs';
 import * as rpc from './rpc-lib.mjs';
 import { buildClaimDigest, handleKey, weiToPot, PORTALDOT } from '../web/lib/plaque.js';
 
-const CHAIN = 420420777;
+import config from '../config/plaque.json' with { type: 'json' };
+const CHAIN = config.chainId;
 const address = process.argv[2];
 const deployTx = process.argv[3];
 const handles = (process.argv[4] || 'unify').split(',');

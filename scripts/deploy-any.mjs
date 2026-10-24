@@ -9,7 +9,8 @@ import { Wallet, keccak256 } from 'ethers';
 import { readFileSync, writeFileSync } from 'node:fs';
 import * as rpc from './rpc-lib.mjs';
 
-const CHAIN = 420420777;
+import config from '../config/plaque.json' with { type: 'json' };
+const CHAIN = config.chainId;
 const name = process.argv[2];
 if (!name) { console.error('usage: node scripts/deploy-any.mjs <artifactName>'); process.exit(1); }
 
