@@ -130,12 +130,14 @@ No new transaction is needed. The existing claim tx is the proof:
 ## Sponsor balance / top-up
 
 The sponsor `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5` holds **0.874819 tPOT**. Under the default
-policy (fixed 1.3e14 gas limit, 32,350 wei gas price, 0.1 tPOT reserve) one claim needs a **4.3055
-tPOT balance**; the actual spend is **≈3.87 tPOT**. It can fund **0** live claims today.
+policy (fixed 1.3e14 gas limit, 0.1 tPOT reserve) the required balance is
+`gasLimit × gasPrice + 0.1`. At the live 31,970 wei reading on 2026-10-24 19:31Z that is **4.2561
+tPOT** (4.3055 at the 32,350 example); the actual spend is **≈3.87 tPOT**. It can fund **0** live
+claims today.
 
-For one live claim on camera, top up at least **3.4307 tPOT** (to 4.3055); **5 tPOT** is the
-recommended buffer (top up **4.1252 tPOT**). If you do not top up, record the fallback; it is a
-complete proof of the same live claim.
+For one live claim on camera, top up at least **3.3813 tPOT** at the live price (3.4307 at the
+example); **5 tPOT** is the recommended buffer (top up **4.1252 tPOT**). If you do not top up, record
+the fallback; it is a complete proof of the same live claim.
 
 ## Commands to reproduce every number
 

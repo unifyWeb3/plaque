@@ -406,11 +406,12 @@ docs/          INTEGRATE.md: the relayer module, client, config, readers, storag
 ## 9. Sponsor balance and a live demo
 
 The sponsor wallet holds **0.874819 tPOT**. Under the default policy (fixed `1.3e14` gas limit,
-32,350 wei gas price, 0.1 tPOT reserve) one claim needs a **4.3055 tPOT balance**; the actual spend
-is **≈3.87 tPOT**. The current balance therefore funds **0** live claims.
+0.1 tPOT reserve) the required balance is `gasLimit × gasPrice + 0.1`. At the 32,350 wei example gas
+price that is **4.3055 tPOT**; at the live 31,970 wei reading on 2026-10-24 19:31Z it is **4.2561
+tPOT**. The actual spend is **≈3.87 tPOT**. The current balance therefore funds **0** live claims.
 
-For one live claim on camera, top up at least **3.4307 tPOT** to reach 4.3055 tPOT; **5 tPOT** is the
-recommended buffer (top up **4.1252 tPOT**). The sponsor address is
+For one live claim on camera, top up at least **3.3813 tPOT** at the live price (3.4307 tPOT at the
+32,350 example); **5 tPOT** is the recommended buffer (top up **4.1252 tPOT**). The sponsor address is
 `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`. Nothing in the submission depends on a new claim:
 the existing claim tx is already live, and the fallback demo (`npm run verify:live` + the existing tx)
 needs no funds.
