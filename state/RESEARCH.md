@@ -55,7 +55,8 @@ RPC tools, message board).
 - `pallet-revive` (EVM) **and** `pallet-contracts` (WASM) both live in the same runtime, plus
   `MetaTx` (gasless meta-transactions), `VerifySignature`, `SkipFeelessPayment`, `AssetsPrecompiles`
   (the EVM can reach the `Assets` pallet) and `TransactionStorage`.
-- **Cost model measured:** ~0.01 tPOT per call, **~0.095 tPOT per byte of deployed code**, and the
+- **Cost model measured** (superseded 2026-10-24: a *claim* writes storage, so it costs 3.87 tPOT — see
+  `state/MEMORY.md` §2 for the final numbers; the figures here are gas-only calls and code deposits): ~0.01 tPOT per call, **~0.095 tPOT per byte of deployed code**, and the
   storage-deposit limit is derived from the transaction's gas limit — so a deployment fails unless the
   gas limit is large enough. Typical account balances are 1–10 tPOT, so most accounts cannot deploy
   anything, and the chain's EVM gas unit is ~1e12 per call rather than mainnet's 21,000.
@@ -78,7 +79,7 @@ tooling.
 3. **A permissionless, on-chain directory/identity primitive** for the ecosystem (the ecosystem
    support programme itself talks about an "official ecosystem listing", which today is a manual list).
 4. **Cost transparency** — nobody publishes what an action costs on this chain, even though the cost
-   model is unusual (14-decimal POT, ~0.01 tPOT per write, ~0.095 tPOT per byte of code) and is a real
+   model is unusual (14-decimal POT, a storage deposit per claim, a code deposit per byte) and is a real
    trap for builders.
 
 **What remains unverified:** the event's build list is still "under organizer review", so the actual

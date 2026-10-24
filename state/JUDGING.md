@@ -10,44 +10,41 @@ judgement rather than fact. They are **not** a prediction of the result.
 
 | Criterion | Weight | My score | Why |
 |---|---|---|---|
-| **Technical Feasibility** | 30 % | **21/30** | A real contract, compiled from committed source and deployed to the live V3 testnet with a **byte-for-byte bytecode comparison**; a live state-changing transaction; a second contract deployed and fully exercised (event + pinned state read); 16 unit tests with positive controls for every refusal; a working frontend that reads the chain. **Deduction:** the deployed build cannot complete a claim on this runtime (a chain limitation, proved with two probe contracts), so the product's core action is not demonstrable end-to-end on chain until the wallet is funded. |
-| **Innovation** | 30 % | **19/30** | The gap is real and unoccupied: a *consumer* app on Portaldot where the end user pays nothing, with the sponsorship recorded on chain, plus the cost transparency that the chain's unusual economics make interesting. **Deduction:** sponsored writes are a known pattern elsewhere (gasless relayers), and the novelty rests on Portaldot's specific economics and its unused `MetaTx`/`VerifySignature` machinery rather than on a new cryptographic or protocol idea. |
-| **Ecosystem Contribution** | 20 % | **13/20** | The sponsored-write rail is the first thing any Portaldot dApp needs once the chain is busy, and a handle registry is permanent infrastructure the whole ecosystem can read from the public RPC; the repository also documents hard-won chain facts (the gas-limit rule, the deposit economics, the BLOCK-opcode limitation) that every other builder will hit. **Deduction:** the rail is not yet running as a hosted service, so the contribution is a component, not yet a service. |
-| **Business Potential** | 20 % | **10/20** | The sponsor is the customer, the unit cost is measured (≈0.01 tPOT per write), and a hosted relayer with on-chain budgets is a plausible business. **Deduction:** no customer, no price validation and no demand evidence — the honest position is that the business model is a hypothesis, and the chain's own token economics may never make sponsorship valuable. |
-| **Total** | 100 | **63/100** | A complete, honest, live-verified build with one chain-level blocker that a single faucet top-up removes. |
+| **Technical Feasibility** | 30 % | **26/30** | The core action is **live on the V3 testnet**: a claim signed by an account holding 0 wei, paid for by a sponsor, written to storage and to the event log (tx `0xa654bd9c…edf2`, block 167209). The deployed bytecode is byte-for-byte the committed source, `npm run verify:live` re-proves ten checks read-only, and 21 tests pass including a differential suite between the readable build and the deployed one. **Deduction:** the deployed 302-byte build omits `release` and transfers, there is no hosted relayer in the deployed app, and the sample is one claim rather than a busy registry. |
+| **Innovation** | 30 % | **20/30** | A *consumer* app on Portaldot where the end user pays nothing, with the sponsorship public on chain, plus a cost model measured rather than assumed. The engineering response to a runtime that rejects BLOCK opcodes and charges per byte/per storage entry is itself a contribution. **Deduction:** sponsored writes are a known pattern elsewhere, and the novelty rests on Portaldot's economics and its unused `MetaTx`/`VerifySignature` machinery rather than on a new protocol idea. |
+| **Ecosystem Contribution** | 20 % | **14/20** | A live registry other Portaldot apps can read from the public RPC, a sponsored-write rail, a verifier anyone can run, and a documented set of hard-won chain facts (gas-limit rule, deposit economics, BLOCK-opcode limitation) that every builder here will hit. **Deduction:** the rail is not yet a hosted service, so the contribution is a component plus a reference implementation. |
+| **Business Potential** | 20 % | **11/20** | The sponsor is the customer, and the unit economics are now measured from a live claim (≈3.87 tPOT, dominated by the chain's storage deposit) instead of guessed. **Deduction:** no customer, no pricing validation, no demand evidence; the deposit makes sponsorship more expensive than a gas-only model, which weakens the "fund thousands of names" version of the pitch. |
+| **Total** | 100 | **71/100** | A complete, honest, *working* live build: the thing the product promises happens on the real chain, and anyone can re-check it with one command. |
 
 ## The three strongest objections a skeptical judge could raise
 
-**1. "The contract is deployed but it cannot do the thing it exists for."**
-This is the serious one, and it is true: the deployed build reads `block.chainid` inside the claim
-digest, and this runtime reverts on that opcode, so every sponsored claim reverts.
-*Fix applied:* the limitation is stated in the README, on the dashboard itself, and in
-`state/CHAIN-LIMITATION.md`, with the two probe transactions that prove it; the chain-compatible
-build (`contracts/PlaqueV2.sol`) is committed, tested and one command away from deployment; and the
-funding request is the first thing in the README and in the final report. It is not hidden and it is
-not explained away.
+**1. "Is the claim real, or a mock?"**
+It is real, and this is now the strongest part of the submission rather than the weakest. The claim
+transaction is on the V3 testnet (block 167209), the signer's balance was 0 wei before, during and
+after, the storage slot holds the signer, and the event names the sponsor that paid. `npm run
+verify:live` re-runs ten checks against the public RPC with no funds and no writes, including a live
+signature matrix: a valid signature is accepted and a tampered one, a wrong-address one and an
+empty-handle one are refused.
 
 **2. "A name registry is not novel, and 'the sponsor pays' is a known pattern."**
 *Fix applied:* the submission does not claim novelty in the abstract — it claims a gap that is
 verifiable in the ecosystem (no consumer app on Portaldot, the sponsored path unused, the chain's
-economics unmeasured). The differentiators that remain are the measured cost model, the on-chain
-sponsor ledger, and the fact that the product is a *usable* consumer app rather than another
-middleware layer. The design notes also state the griefing weakness of gasless claims openly, with
-the mitigation planned.
+economics unmeasured). The differentiators are the measured cost model, the on-chain sponsor record,
+the public verifier, and the fact that this is a *usable* consumer app rather than another middleware
+layer. The design notes state the griefing weakness of gasless claims openly.
 
-**3. "How do I know the deployment matches the repository, and who paid for the gas?"**
-*Fix applied:* the deployed bytecode is compared byte-for-byte with a fresh compile of the committed
-source, with both keccak hashes recorded (`0xce34126d…73472ae`), the compiler version and settings
-recorded, and the deployment transaction and block cited. The sponsorship is public: the claim event
-carries the sponsor address and the gas price, and the sponsor ledger is in the dashboard. The
-single trusted key (the sponsor's) is stated plainly, and the scripts show that it can only pay gas.
+**3. "Why is the deployed contract assembly, and why is it not the readable one?"**
+*Fix applied:* the repository explains the two measured constraints (BLOCK opcodes, deposits per byte
+and per storage entry), keeps the readable builds (`Plaque.sol`, `PlaqueV2.sol`) and their tests, and
+proves the deployed 302-byte build agrees with the readable one via a differential test suite. The
+choice is presented as a cost decision with numbers, not as a style preference — and the alternative
+(741 bytes, ~71 tPOT) is committed for a chain where the budget allows it.
 
 ## What I would do with more time, in order
 
-1. Fund and deploy the chain-compatible build, then record the sponsored claim end to end
-   (a user with 0 tPOT, a sponsor paying, the registry updating) — this converts the biggest
-   deduction into the strongest proof.
+1. Fund ~40 tPOT so the demo can show several live claims on camera (the sponsor holds 0.87 tPOT and
+   one claim costs ≈3.87 tPOT).
 2. Add the claim-then-confirm grace period, which removes the name-griefing weakness.
-3. Publish the demo video and the pitch deck (the two remaining submission artefacts).
+3. Port `release` and signed transfers into a funded, larger build.
 4. Run the hosted sponsor for a week and publish the real cost ledger, so the business claim stops
    being a hypothesis.

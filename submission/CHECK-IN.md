@@ -1,87 +1,112 @@
 # Check-in submission — ready to paste
 
 **Deadline: 2026-10-24 12:00 UTC.** The check-in is a *human* action (it needs the DoraHacks account);
-this file is the text and the links, ready to copy.
+this file is the text and the links, ready to copy. Everything in it is already done and on chain.
 
 ---
 
 ## 1. Project progress
 
-**Plaque** — a sponsored handle registry for Portaldot: the user signs one message, a sponsor pays the
-gas, and the name is bound to the signer on chain.
+**Plaque** — a sponsored handle registry for Portaldot: the user signs one message, a sponsor pays,
+and the name is bound to the signer on chain. **It is live and it has already claimed a name.**
 
 Done and verified:
 
-* a Solidity registry deployed to the **Portaldot V3 testnet** at
-  **`0xa0e58d0c6392048959c0b16a9d3696fe49d063d6`**
-  (tx `0x7857ccc37707d6303f97b6001828b33177e6bd546d16bb00e3597a3ca663f14d`, block 132033, status
-  success), with the deployed bytecode **byte-for-byte identical** to a fresh compile of the
-  committed source;
-* a second, smaller contract deployed and fully exercised on the testnet (claim transaction, receipt
-  event, state read back at a pinned block) — this is the live proof that the deployment and read
-  path work;
-* **16/16 unit tests** passing on ganache, covering the legitimate path and every refusal with a
-  positive control;
-* a Next.js frontend reading the chain through the public RPC, deployed and publicly reachable at
-  **https://plaque-oxunify.vercel.app**;
-* a sponsor relayer, a deploy script that fails closed on an unfundable deposit, and a pre-push
-  security sweep;
-* 10 commits in the public repository, all dated inside the event window.
+* **A live sponsored claim on the Portaldot V3 testnet**: tx
+  **`0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2`** (block **167209**,
+  status success). The signer, `0xd35404A86f825741BA8a65a31Eb8ca1D52315Fe6`, held **0 wei before,
+  during and after** the claim; the sponsor `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5` paid
+  3.8695 tPOT. The binding is readable at the `keccak256("unify" ‖ 0)` storage slot, and the
+  `Claimed` event names the signer and the sponsor.
+* The contract, **`0x5432e6b89dc3042d47f2be98e971cad9dabab685`** (`contracts/PlaqueLite.sol`, 302
+  bytes), deployed in block **167044** (tx
+  `0xcee4d1db6c86250faa16bd67419168c7628c8a88533bf3d84316ccfd0c3bb63a`). Its deployed bytecode is
+  **byte-for-byte identical** to a fresh compile of the committed source (keccak
+  `0x8a952eb82ff4a318b515cbface69a28c0f5dbbdab725d26220612a2dde6e3986`).
+* **A read-only verifier** (`npm run verify:live`): 10 checks against the public RPC — deployed code,
+  the storage binding, the signer's zero balance, the event, and a live signature matrix (valid
+  accepted; tampered, wrong-address and empty-handle refused). **All passing.**
+* **21/21 unit tests** passing on ganache, including a differential suite that runs the readable build
+  and the deployed build against the same signatures.
+* A Next.js frontend reading the chain server-side, deployed publicly at
+  **https://plaque-oxunify.vercel.app**; a sponsor relayer; a deploy script that fails closed; a
+  pre-push security sweep; browser QA at 390×844 and 1280×900.
+* **14 commits** in the public repository, spread across the event window.
 
-## 2. Outstanding items
+## 2. What the engineering found (and fixed)
 
-1. **One chain-level blocker, stated plainly.** The V3 runtime (`pallet-revive`) reverts on the
-   BLOCK-family opcodes (`CHAINID`, `TIMESTAMP`, `NUMBER`). The first build used `block.chainid`
-   inside the claim digest, so a claim on this chain reverts. Two probe contracts prove the
-   limitation (`0x99e40a18…759e0c`, `0xba261049…18fcff`), and two contracts that never read the clock
-   deploy fine.
-   The chain-compatible build (`contracts/PlaqueV2.sol`, chain id as a constant, no `block.*`) is
-   written, tested and one command from deployment; it needs **≈71 tPOT** for the code deposit
-   (the chain charges ≈0.095 tPOT per byte of code), and the testnet wallet holds **41.5 tPOT**.
-   A faucet top-up of ~100 tPOT to `5Hkx9RshKpqfvttQFTc5Ze7JbuunB6FP488X3eBzGPY9WYTf` unblocks it.
-2. **Demo video** (≤3 min) — the shot-by-shot script is written (`submission/DEMO-SCRIPT.md`); the
-   recording is next.
-3. **Pitch deck** (PDF) — the one-page content is written (`submission/PITCH.md`).
+The runtime has two measured constraints, both documented with transactions:
+
+1. **`pallet-revive` reverts on the BLOCK-family opcodes** (`CHAINID`, `TIMESTAMP`, `NUMBER`). The
+   first contract read `block.chainid` inside the claim digest, so every claim reverted; two probe
+   contracts prove it (`0x99e40a18…759e0c`, `0xba261049…18fcff`). The fix: the chain id is a
+   compile-time constant and the digest binds handle + claimant + chain + contract, with nothing read
+   from the clock.
+2. **The chain charges a deposit per byte of code and per storage entry.** 786 bytes cost 74.5 tPOT,
+   302 bytes cost 36.7 tPOT, and one new registry entry costs ≈3.84 tPOT. The deployed build is the
+   302-byte one for exactly that reason, and one claim costs 3.87 tPOT, almost all of it the storage
+   deposit.
 
 ## 3. Public GitHub repository
 
 **https://github.com/unifyWeb3/plaque**
 
-Complete README (problem, audience, architecture, trust model, what is verified live vs only tested
-locally, deployment details, install/run, tests), deployment instructions, runnable code, and the
-project documentation in `state/`. Ten commits, spread across the event window — not a final-day
-dump.
+Complete README (problem, audience, architecture, trust model, live evidence, install/run, tests,
+deployment details, the two chain constraints), deployment instructions, runnable code, and the
+project documentation in `state/`.
 
 ## 4. Testnet deployment information
 
 | Field | Value |
 |---|---|
 | Network | Portaldot V3 testnet, chain id **420420777** |
-| Contract | **`0xa0e58d0c6392048959c0b16a9d3696fe49d063d6`** |
-| Deployment tx | **`0x7857ccc37707d6303f97b6001828b33177e6bd546d16bb00e3597a3ca663f14d`** |
-| Block | 132033 |
+| Contract | **`0x5432e6b89dc3042d47f2be98e971cad9dabab685`** |
+| Deployment tx | **`0xcee4d1db6c86250faa16bd67419168c7628c8a88533bf3d84316ccfd0c3bb63a`** (block 167044) |
+| Live claim tx | **`0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2`** (block 167209) |
 | Explorer | https://node-console.portaldot.dev |
-| Bytecode proof | on-chain keccak `0xce34126d8ac9c9a0c3d50c88fc72a52206a6763530cb55184e810ae9073472ae` = fresh-compile keccak |
-
-Live transaction from the same wallet (evidence the account can write on this chain):
-`0x2658d4f3a93e43afd057257fdbfc218002c0b39e3cd4f87f2a74daf7927663ba` (block 132718).
+| Bytecode proof | on-chain keccak `0x8a952eb8…e3986` = fresh-compile keccak |
+| Verify it yourself | `npm run verify:live` (read-only, no funds needed) |
 
 ## 5. Demo material
 
-**Live demo: https://plaque-oxunify.vercel.app** — the homepage reads the chain and shows the live
-block height, the contract and the deployment transaction; the dashboard derives every action from
-the chain state.
+**Live app: https://plaque-oxunify.vercel.app** — the homepage reads the live block height, the
+contract and the deployment transaction; the dashboard shows `unify` as taken by the zero-balance
+signer and the sponsor ledger row with the claim transaction.
+
+**Verifier output** (also in `evidence/live-verification.txt`):
+
+```
+$ npm run verify:live
+  PASS  deployed code equals the committed build  302 bytes, keccak 0x8a952eb82ff4a318...
+  PASS  ownerOf("unify") is the zero-balance claimant  0xd35404a86f825741ba8a65a31eb8ca1d52315fe6
+  PASS  the claimant still holds 0 wei
+  PASS  the Claimed event is on chain  block 167209
+  PASS  the event names the claimant as `who`
+  PASS  the event names the sponsor that paid
+  PASS  a valid signature is accepted (eth_call)
+  PASS  a tampered signature is refused
+  PASS  a signature for another address is refused
+  PASS  an empty handle is refused
+ALL CHECKS PASSED
+```
 
 The ≤3-minute demo video will be recorded from `submission/DEMO-SCRIPT.md` before the final
 submission.
+
+## 6. Still outstanding
+
+1. **Demo video** (≤3 min) — shot list written (`submission/DEMO-SCRIPT.md`); recording next.
+2. **Pitch deck** (PDF) — the one-page content is written (`submission/PITCH.md`).
+3. **Volume, not function:** the sponsor wallet holds 0.87 tPOT and a claim costs ≈3.87 tPOT, so
+   further *live* claims need a small faucet top-up (~40 tPOT = ten claims). The submitted claim is
+   already live; nothing in the submission depends on more.
 
 ---
 
 ## One-line version
 
-> Plaque — a sponsored handle registry for Portaldot. Deployed on the V3 testnet
-> (`0xa0e58d0c6392048959c0b16a9d3696fe49d063d6`, block 132033), bytecode-verified against the
-> committed source, 16/16 tests passing, frontend live at https://plaque-oxunify.vercel.app. One
-> known chain limitation (the runtime reverts on BLOCK opcodes) is documented with probe
-> transactions, and the chain-compatible build is ready — it needs a ~100 tPOT faucet top-up to
-> deploy.
+> Plaque — a sponsored handle registry for Portaldot, live on the V3 testnet: contract
+> `0x5432e6b8…b685` (block 167044), bytecode verified against the committed source, and a live claim
+> at block 167209 signed by an account whose balance was 0 wei before, during and after.
+> `npm run verify:live` re-proves all ten checks; 21/21 tests pass; app at
+> https://plaque-oxunify.vercel.app.
