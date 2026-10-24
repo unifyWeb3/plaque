@@ -71,7 +71,7 @@ analytics.
 tooling.
 
 **Empty:**
-1. **Track 4 (Ecosystem DApps)** — no consumer-facing application is visible in any public Portaldot
+1. **Modular Cloud & Middleware** — the sponsored-write rail is reusable middleware; the registry is the reference consumer. The earlier consumer-app framing was weaker because the hosted app does not submit. Historical note: no consumer-facing application is visible in any public Portaldot
    repository.
 2. **The sponsored / gasless write path.** `MetaTx` and `VerifySignature` exist in the runtime, but no
    public project uses them, and no project addresses the fact that **a brand-new Portaldot user with

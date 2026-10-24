@@ -52,27 +52,31 @@ export default async function Home() {
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
-            <p className="eyebrow">Portaldot Hacker House 2026 · Ecosystem DApps</p>
-            <h1>Claim your name on Portaldot with one signature.</h1>
+            <p className="eyebrow">Portaldot Hacker House 2026 · Modular Cloud &amp; Middleware</p>
+            <h1>Make a sponsored write on Portaldot with one signature.</h1>
             <p className="lede">
-              Plaque is a sponsored handle registry. A name is bound to the address that signed
-              for it, a sponsor pays the gas, and the binding is permanent and readable by
-              anyone through the public RPC. The hosted app has no sponsor key: it produces the
-              exact signed claim; run the relayer locally, or submit it from a funded wallet.
+              Plaque is a reference implementation of a sponsored (gasless) write. A user with a
+              zero balance signs one domain-bound message; a relayer verifies it and pays; the chain
+              records who signed. The handle registry is the example write. The hosted app has no
+              sponsor key: it produces the exact signed claim; run the relayer locally, or submit it
+              from a funded wallet.
             </p>
 
             <div className="problem">
               <p>
                 <strong>The problem.</strong> On Portaldot, a brand-new account holds 0 tPOT, so
                 it cannot make a single on-chain record &mdash; and testnet POT is distributed by
-                hand through a Discord ticket. Every newcomer is stuck at zero, and a dApp cannot
-                ask them to buy gas before they can use it.
+                hand through a manual support ticket. Every newcomer is stuck at zero, and a dApp cannot
+                ask them to buy gas before they can use it. The reusable fix is a sponsored write,
+                not another faucet.
               </p>
               <p className="muted" style={{ marginBottom: 0 }}>
-                <strong>The answer.</strong> The user signs a message, a sponsor pays for it.
-                The chain&rsquo;s measured cost is about <strong>3.87 tPOT</strong> per claim,
-                almost all of it the storage deposit the runtime keeps for the new entry. A
-                100 tPOT sponsor budget therefore covers roughly 25 names, not tens of thousands.
+                <strong>The answer.</strong> The user signs a message, a relayer verifies it
+                off-chain and pays. The chain&rsquo;s measured cost is about <strong>3.87 tPOT</strong>
+                per claim, almost all of it the storage deposit the runtime keeps for the new entry.
+                A 100 tPOT sponsor budget therefore covers roughly 25 writes, not tens of thousands.
+                The deployed build has no release or transfer and the registry is first-come; those
+                limits are stated in the README first screen.
               </p>
             </div>
 

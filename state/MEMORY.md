@@ -1,4 +1,4 @@
-# MEMORY — Portaldot Hacker House 2026 (builder: unify / @oxunifyy)
+# MEMORY — Portaldot Hacker House 2026 (builder: unify)
 
 Project log: findings, evidence, decisions, open items. The machine-readable source for public
 chain parameters is `config/plaque.json`; the consistency test fails if a copy drifts.
@@ -23,7 +23,7 @@ Last updated **2026-10-24 10:38Z** (hostile audit).
 | Judging | **Technical Feasibility 30 %**, **Innovation 30 %**, **Ecosystem Contribution 20 %**, **Business Potential 20 %**; evidence = repo, commit timeline, testnet txs, contract addresses, tx hashes, live demo | VERIFIED |
 | DoraHacks form field limits | **UNRESOLVED** — not published; every copy block is written short | UNRESOLVED |
 
-**Track:** 4 Ecosystem DApps (the sponsored-write rail underneath is track-1 middleware).
+**Track:** Modular Cloud & Middleware (the sponsored-write rail; the registry is the reference consumer).
 **Time remaining at 2026-10-24 10:38Z:** final deadline **≈12.7 days**; check-in **≈1.4 hours**.
 
 ## 2. The Portaldot V3 testnet (all VERIFIED)
@@ -128,7 +128,7 @@ to a fresh compile, then `bump(7)` → receipt, one log decoded to `Bumped(7)`, 
 
 ## 6. Product and build
 
-**Plaque** — a sponsored handle registry for Portaldot (Track 4). The user signs one message, a
+**Plaque** — a sponsored-write reference implementation for Portaldot (Modular Cloud & Middleware). The user signs one message, a
 sponsor pays, the contract binds the name to the address that signed, and the sponsor is public in
 the event log. Decision / candidates / red team: `state/DECISION.md`. Design, interfaces, threat
 model, test plan: `state/DESIGN.md`. Research (anonymised): `state/RESEARCH.md`. Name availability:
@@ -187,7 +187,7 @@ tx, the `Claimed` event for `unify`, and `handles: 1`.
 | A zero-balance user can claim | the live claim tx + the storage slot + the claimant's 0 balance |
 | The signature check works on this runtime | the `eth_call` matrix (valid accepted; tampered / wrong-address / zero-address refused) |
 | The registry is readable by anyone | `eth_getStorageAt` and `eth_getLogs` through the public RPC, pinned to a block |
-| The SDK and the contract agree | 33 tests (16 readable + 7 lite + 7 consistency + 3 relayer) |
+| The SDK and the contract agree | 41 tests (16 readable + 8 lite + 7 consistency + 3 relayer + 7 policy) |
 | The mechanic is reproducible locally | `npm run demo` (labelled local chain, `evidence/local-demo.txt`) |
 | The UI works | browser QA at 390×844 and 1280×900 (`evidence/qa/`) |
 | The BLOCK-opcode limitation is real | two probe transactions, plus the failed claims on the first build |
@@ -218,13 +218,21 @@ tx, the `Claimed` event for `unify`, and `handles: 1`.
 | A5 | Keep the hosted app honest: no sponsor key, no transaction sent; the button says “Sign claim” and explains the payload | The old copy implied the app could submit (F4) |
 | A6 | Relayer: verify the signature off chain, reject non-canonical/zero handles and taken slots, fixed 1.3e14 gas limit, serialize nonces, cap pending, allowlist origins | Prevents a forged/taken claim from costing gas and a drive-by browser request from draining the sponsor |
 | A7 | Document the lite limits instead of claiming parity: no release/window, zero handle accepted by the contract, payable fallback with no withdraw, no gas-price field | The old README/DESIGN/deck claimed “same event/semantics” and an “empty handle refused” check |
-| A8 | Do **not** redeploy | The deployed runtime is byte-for-byte reproducible from the committed source after A1; a redeploy would need ~4.29 tPOT of gas-limit cover, a new address and a check-in addendum, with no security benefit. The remaining limits are byte-size trade-offs, not exploitable fund losses. |
-| A9 | Keep the submitted check-in text and add an audit addendum | The check-in is a submitted artifact; the addendum corrects the two changed counts (33 tests, zero-address check) without rewriting history. |
+| A8 | Do **not** redeploy | The deployed runtime is byte-for-byte reproducible from the committed source after A1; a redeploy would need ~4.3055 tPOT of gas-limit cover, a new address and a check-in addendum, with no security benefit. The remaining limits are byte-size trade-offs, not exploitable fund losses. |
+| A9 | Keep the submitted check-in text and add an audit addendum | The check-in is a submitted artifact; the addendum corrects the changed counts (41 tests, zero-address/zero-handle boundary) without rewriting history. |
 | A10 | Keep the `audit-baseline` tag local and never force-push; commit fixes normally | The submitted state is evidence; history is additive. Baseline is `23f4067`. |
-| A11 | Do not pivot after the competitor scan; reposition honestly | A public ENS-style `.pot` name service exists and is broader. Plaque's defensible claim is the live, measured sponsored write plus reproducibility, not novelty. |
+| A11 | Do not pivot after the competitor scan; reposition honestly | A broader public name service exists. Plaque's defensible claim is the live, measured sponsored write plus reproducibility, not novelty. |
 | A12 | Mirror the public config inside `web/lib/plaque-config.json` | Vercel's project root is `web`; files above it are not uploaded. The mirror is byte-identical and `tests/consistency.test.mjs` fails on drift. |
-| A13 | Clean-clone workaround: root `npm install` (not `npm ci`) and web `npm ci` | Root lockfile drift is a real finding; web lockfile is in sync and Vercel uses it. |
+| A13 | Fix the root lockfile and use `npm ci` everywhere | Root `package-lock.json` was stale; `npm install --package-lock-only` regenerated it, `npm ci` passed from a fresh temp directory. |
 | A14 | The demo video is a human blocker | The event requires it; no video exists. The deck and `submission/DEMO-SCRIPT.md` are ready, but the recording is not. |
 | A15 | Deploy the existing Vercel project once after the push, only if the app build is green | The hosted app was stale and showed the free-handle bug. Local production build and QA passed; `vercel build --prod` then `vercel deploy --prebuilt --prod` produced `dpl_AQv46Teudz3iweHGs58qVWe4fumd` (Ready, alias `plaque-oxunify.vercel.app`). No contract redeploy. |
 | A16 | Record the Vercel Git-integration root mismatch as a manual action | The project Root Directory is `.`; the push at 10:19Z triggered a failed Git build (`dpl_412h...`). The manual CLI deploy from `web` is the working path. Set Root Directory to `web` before future Git pushes. |
-| A17 | Public clone re-run is the final reproducibility proof | `https://github.com/unifyWeb3/plaque.git` at `f3eefa0`, 10:34Z: compile, 33/33 tests, and 10/10 verifier checks passed without secrets. |
+| A17 | Public clone re-run is the final reproducibility proof | `https://github.com/unifyWeb3/plaque.git` at `f3eefa0`, 10:34Z: compile, 33/33 tests, and 10/10 verifier checks passed without secrets (pre-Stage-A baseline; current suite is 41). |
+| A18 | Separate the zero ADDRESS, invalid signature and zero HANDLE cases; add `scripts/probe-zero-key.mjs` | Live `eth_call` at block 178348: zero address refused; invalid signature refused; zero handle accepted, owner = non-zero signer, sponsor pays, state unchanged. The app/relayer reject it; the frozen contract cannot. |
+| A19 | Relayer rejects a recovered zero address explicitly, for both the lite and ABI paths | `verifyMessage` can throw; the code now catches it and checks the recovered address is nonzero and equal to `who`. Refusal tests added to `tests/relayer.test.mjs`, with the valid claim as positive control. |
+| A20 | Add per-IP, per-origin, per-owner, global claim/spend and minimum-balance controls | `scripts/relayer-policy.mjs`, `config/relayer-policy.example.json`, 7 tests in `tests/relayer-policy.test.mjs`; HTTP 429 checks at 12:40Z. Global budget bounds a public sponsor; per-IP/origin are spoofable by non-browsers and per-owner by fresh keys. |
+| A21 | Configure lint and add `AGENTS.md`; document `npm ci` | `web/.eslintrc.json` + `next lint` exit 0; `AGENTS.md` committed; root `package-lock.json` regenerated and `npm ci` passed from a fresh temp directory. |
+| A22 | Set the Vercel project Root Directory to `web` via API PATCH | `PATCH /v9/projects/prj_1iXdgZBbnkDn67Mgcsrcp2aj92Nk` returned 200; GET returned `rootDirectory: web`. No build triggered by the config change. |
+| A23 | Reposition to a sponsored-write reference implementation; choose Modular Cloud & Middleware | The official track text asks for middleware/storage/APIs; the relayer + signature + reader is the reusable artifact, the registry is the example. No novelty claim. |
+| A24 | Write `docs/INTEGRATE.md` and a local-chain sponsor-kit test | Client snippet, relayer module, config surface, Solidity reader, storage layout and event; `tests/plaque-lite.test.mjs` test 8 writes through Ganache with refusals after the positive control. |
+| A25 | Rewrite the demo script to 2:50 with a no-funds fallback; state the sponsor top-up | 0.874819 tPOT now funds 0 claims; one claim needs 4.3055 tPOT with the 0.1 reserve; top up at least 3.4307 tPOT (5 tPOT recommended). |

@@ -49,32 +49,33 @@
 
 <!-- 1 -->
 <section class="slide">
-  <p class="kicker">Portaldot Hacker House 2026 · Track 4</p>
-  <h1>Claim your name on Portaldot.<br />You sign. A sponsor pays.</h1>
-  <p class="lede">Plaque is a sponsored handle registry: you sign one message, a sponsor pays, and your
-  name is bound on chain. It is already live on the V3 testnet — and the claim that proves it was
-  signed by an account holding <span class="amber">0 tPOT</span>.</p>
+  <p class="kicker">Portaldot Hacker House 2026 · Modular Cloud &amp; Middleware</p>
+  <h1>Make a sponsored write on Portaldot.<br />You sign. A relayer pays.</h1>
+  <p class="lede">Plaque is a reference implementation of a sponsored (gasless) write: a user with a
+  zero balance signs once, a relayer verifies and pays, and the chain records who claimed. The handle
+  registry is the example write. It is live on the V3 testnet — the proof claim was signed by an
+  account holding <span class="amber">0 tPOT</span>.</p>
   <div class="rule"></div>
   <div class="grid3">
     <div><p class="kicker" style="margin-bottom:6px">Contract</p><p class="fact">0x5432e6b89dc3042d<br />47f2be98e971cad9<br />dabab685</p></div>
     <div><p class="kicker" style="margin-bottom:6px">Live claim</p><p class="fact">block <b>167,209</b><br />claimant balance <b>0 wei</b><br />sponsor paid <b>3.87 tPOT</b></p></div>
     <div><p class="kicker" style="margin-bottom:6px">Verify it</p><p class="fact">npm run verify:live<br /><b>10 checks, all passing</b></p></div>
   </div>
-  <div class="footer"><span>Plaque</span><span>unify · @oxunify</span></div>
+  <div class="footer"><span>Plaque</span><span>Plaque · sponsored write</span></div>
 </section>
 
 <!-- 2 -->
 <section class="slide">
   <p class="kicker">The problem</p>
-  <h2>A brand-new account holds zero, so it cannot record anything.</h2>
+  <h2>A brand-new account holds zero, so it cannot write anything.</h2>
   <div class="grid2">
     <div>
       <p>On Portaldot a new account starts at <span class="amber">0 tPOT</span>. It cannot send a
       transaction, claim a name, register for a program or leave any trace on chain.</p>
-      <p>Testnet POT is handed out by hand through a Discord support ticket. So the first experience of
+      <p>Testnet POT is handed out by hand through a manual support ticket. So the first experience of
       the ecosystem is: wait for a human.</p>
       <p>And every dApp that wants to grow has the same wall: it must ask people to buy gas before they
-      can use it.</p>
+      can use it. The reusable answer is a sponsored write; Plaque makes it a module another dApp can copy.</p>
     </div>
     <div class="card">
       <p class="kicker" style="margin-bottom:14px">The chain already ships the fix</p>
@@ -94,7 +95,7 @@
 <!-- 3 -->
 <section class="slide">
   <p class="kicker">The solution</p>
-  <h2>Three steps. The sponsor pays.</h2>
+  <h2>Three steps. The relayer pays.</h2>
   <div class="grid3">
     <div class="card"><span class="num">01</span><h3>You sign</h3><p>Pick a handle. Your wallet signs one
     EIP-191 message. No transaction, no gas, no account funding.</p></div>
@@ -197,13 +198,14 @@ Plaque live verification - block 171462
 <!-- 7 -->
 <section class="slide">
   <p class="kicker">Who it is for</p>
-  <h2>A consumer app on Portaldot, and the rail under it.</h2>
+  <h2>A reusable rail, with a registry as its first consumer.</h2>
   <div class="grid2">
     <div>
       <p><b style="color:var(--ink)">Users.</b> The ~168 hackers in this event, ecosystem newcomers, and
       anyone who wants a name on chain before they have funds.</p>
-      <p><b style="color:var(--ink)">Builders.</b> Any Portaldot dApp can resolve a handle from the RPC and
-      can reuse the sponsored-write path instead of asking users to buy gas first.</p>
+      <p><b style="color:var(--ink)">Builders.</b> Any Portaldot dApp can reuse the sponsored-write path
+      instead of asking users to buy gas first. <span class="mono">docs/INTEGRATE.md</span> is the
+      under-10-minute path: signature verification, policy caps, nonce queue, config and a reader.</p>
       <p><b style="color:var(--ink)">The ecosystem.</b> The repository documents the chain's real cost and
       opcode constraints with transactions — facts every builder here will hit.</p>
     </div>
@@ -214,8 +216,9 @@ Plaque live verification - block 171462
       sponsorship itself is on chain.</p>
       <p style="font-size:19px;margin-bottom:12px">Unit economics are measured, not guessed: 3.87 tPOT per
       sponsored write on this testnet, dominated by the storage deposit.</p>
-      <p style="font-size:19px">A public name registry is reusable: once apps resolve handles,
-      every later app reads the same table.</p>
+      <p style="font-size:19px">The registry is the reference consumer; the reusable artifact is the
+      sponsored-write rail. The integration guide is tested against a local chain with refusals and
+      positive controls.</p>
     </div>
   </div>
   <div class="footer"><span>Market</span><span>7 / 9</span></div>
@@ -242,14 +245,14 @@ Plaque live verification - block 171462
 <!-- 9 -->
 <section class="slide">
   <p class="kicker">Plaque</p>
-  <h1 style="font-size:52px">A name on Portaldot,<br />without buying gas first.</h1>
+  <h1 style="font-size:52px">A sponsored write on Portaldot,<br />without buying gas first.</h1>
   <div class="grid2" style="margin-top:8px">
     <div>
       <p class="fact" style="font-size:16px">
         <b>app</b> &nbsp; https://plaque-oxunify.vercel.app<br />
         <b>repo</b> &nbsp; https://github.com/unifyWeb3/plaque<br />
         <b>verify</b> &nbsp; npm run verify:live<br />
-        <b>tests</b> &nbsp; npm test — 33 / 33
+        <b>tests</b> &nbsp; npm test — 41 / 41
       </p>
     </div>
     <div>

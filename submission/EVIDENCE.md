@@ -45,7 +45,7 @@ claim, a different account pays for it, and the binding is written where anybody
 
 ```
 $ npm run verify:live
-Plaque live verification - block 171462
+Plaque live verification - block 178363
 
   PASS  deployed code equals the committed build  302 bytes, keccak 0x8a952eb82ff4a318...
   PASS  ownerOf("unify") is the zero-balance claimant  0xd35404a86f825741ba8a65a31eb8ca1d52315fe6
@@ -66,8 +66,12 @@ ALL CHECKS PASSED
 The last four checks run against **live state** with `eth_call`, so they prove the deployed contract's
 signature verification on the real runtime (nothing is written): a valid signature is accepted, a
 tampered one is refused, a valid signature reused for a different address is refused, and a zero
-address is refused. The lite contract does accept the zero *handle* if it is validly signed; the app
-and relayer refuse that key, and the limitation is recorded in `tests/plaque-lite.test.mjs`. Full output: `evidence/live-verification.txt`.
+address is refused. The lite contract does accept the zero *handle* if it is validly signed; the owner
+is the non-zero signer, not the zero address. The app and relayer refuse that key, and the limitation
+is recorded in `tests/plaque-lite.test.mjs`. `node scripts/probe-zero-key.mjs` reproduces all three
+cases with live `eth_call` at block 178348 (no transaction, no funds): zero address refused, invalid
+signature refused, zero handle accepted, and state unchanged. Full output:
+`evidence/live-verification.txt`; probe log: `/tmp/opencode/audit/zero-probe-2.log`.
 
 ## 3. What one claim costs, and why
 
@@ -127,9 +131,9 @@ compile as well (keccak `0x2bd5f237864ce18ddea620f6bdfeffb0cb8956c0b69d24ac0d507
 
 ```
 $ npm test
-# tests 33
+# tests 41
 # suites 0
-# pass 33
+# pass 41
 # fail 0
 # cancelled 0
 # skipped 0
@@ -140,12 +144,13 @@ $ echo $?
 
 `tests/plaque.test.mjs` (16) covers the readable build: the legitimate path, six refusals each with a
 positive control, the digest against the Solidity encoding, the access control on `release`, the UI
-state function, the error lists, and the wei→tPOT conversion. `tests/plaque-lite.test.mjs` (7) covers
+state function, the error lists, and the wei→tPOT conversion. `tests/plaque-lite.test.mjs` (8) covers
 the deployed build: its size, the shared digest scheme, the binding + four-topic event + zero-cost
 claimant, five refusals checked against the same state, the event signature, cross-chain/cross-contract
 refusals, the absence of `release`, and the zero-key limitation. `tests/consistency.test.mjs` (7)
 checks the config/docs/bytecode/address consistency; `tests/relayer.test.mjs` (3) checks the pre-flight
-signature, handle and gas-limit rules.
+signature, handle and gas-limit rules; `tests/relayer-policy.test.mjs` (7) checks the per-IP,
+per-origin, per-owner, global and minimum-balance controls.
 
 ## 7. The local end-to-end demo (labelled: a local chain)
 

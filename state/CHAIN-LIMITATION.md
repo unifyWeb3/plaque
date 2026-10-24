@@ -46,3 +46,13 @@
 // no block.* dependency. It deliberately has no release and no validity window. It claimed live on 2026-10-24 (tx
 // 0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2, block 167209) and
 // `npm run verify:live` re-checks the whole path read-only.
+
+// ---------------------------------------------------------------------------------------------
+// 3. The frozen lite build accepts the zero handle
+// ---------------------------------------------------------------------------------------------
+// A zero ADDRESS (`who == 0`) is refused, and an invalid signature is refused because ecrecover
+// returns 0 and 0 != who. A zero HANDLE (`handle == 0`) is accepted if the signature is valid: the
+// owner becomes the non-zero signer and the sponsor pays the deposit. `node scripts/probe-zero-key.mjs`
+// reproduces all three with live eth_call at block 178348 (no transaction, no funds). The app and the
+// reference relayer reject the zero handle, but the contract cannot prevent it without a redeploy;
+// the deployed contract is frozen.

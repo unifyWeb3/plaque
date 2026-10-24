@@ -1,102 +1,153 @@
-# Demo script — Plaque (2:30)
+# Demo script — Plaque (2:50 hard cap)
 
-> Two and a half minutes, one screen recording. Every number below is read from the live chain;
-> every command is in the README. Record at 1280×900.
+> One screen recording, 1280×900. Every number is read from the live chain. The live claim is already
+> on chain; the fallback path needs no funds. Do not record a fake transaction.
 
-## 0:00 — The hook
+## 0:00–0:20 — The hook (20 s)
 
-**Shot:** the homepage, top of the page, cursor on the problem paragraph.
+**Shot:** homepage at `https://plaque-oxunify.vercel.app`, top card with the live block height.
 
 **Say / caption:**
 > On Portaldot, a brand-new account holds zero tPOT. It cannot make a single on-chain record — and
-> testnet POT arrives by hand through a Discord ticket. So every newcomer is stuck at zero.
+> testnet POT arrives by hand through a manual support ticket. So every newcomer is stuck at zero. Plaque
+> is the reusable answer: a user with zero balance signs once, a relayer pays, and the chain records
+> who claimed.
 
-**On screen:** the live block height in the "Live on the Portaldot V3 testnet" card. It is not a
-mock: the page read the chain while you were talking.
+**On-screen proof:** the live block height and the header table (contract, deploy tx, live claim).
 
-## 0:25 — The product, and a claim that already happened
+## 0:20–0:50 — The proof that already exists (30 s)
 
-**Shot:** the hero, then the header table in the README (contract / deployment tx / live claim).
-
-> Plaque is a sponsored handle registry. You sign one message, a sponsor pays, your name is on chain.
-> This is not a promise: block 167,209 holds a claim signed by an account whose balance was zero
-> before, during and after — `0xd35404…15Fe6` — submitted and paid for by a sponsor.
-
-## 0:50 — The proof shot
-
-**Shot:** a terminal.
+**Shot:** terminal. Run:
 
 ```bash
 npm run verify:live
 ```
 
-> This script reads the public RPC and checks ten things: the deployed code is byte-identical to the
-> committed build, the name is bound to the zero-balance signer, the event names the sponsor, and the
-> contract accepts a valid signature and refuses a tampered one.
+**Say / caption:**
+> This is read-only against the public RPC. Ten checks: the deployed code is byte-identical to the
+> committed build, `unify` is bound to the zero-balance claimant, the claimant still holds 0 wei, and
+> the event names the sponsor that paid. It also proves the contract accepts a valid signature and
+> refuses a tampered one and a zero address.
 
-**On screen:** ten `PASS` lines and `ALL CHECKS PASSED`.
+**On-screen proof:** all ten `PASS` lines, `ALL CHECKS PASSED`, block number.
 
-## 1:20 — How it works
+## 0:50–1:20 — Before / during / after (30 s)
 
-**Shot:** the three numbered steps on the homepage.
+**Shot:** terminal, two panes. Run:
 
-> One: you sign, you do not pay. The signature covers the handle, your address, the chain id and this
-> contract, so it cannot be replayed anywhere. Two: a sponsor submits the signed claim. Three: the
-> contract recovers the signer itself and binds the name — the sponsor cannot choose who gets it.
+```bash
+node -e "const {JsonRpcProvider,formatEther}=require('ethers');const p=new JsonRpcProvider('https://test-evm-rpc-v3.portaldot.dev');Promise.all(['0xd35404A86f825741BA8a65a31Eb8ca1D52315Fe6','0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5'].map(async a=>console.log(a,formatEther(await p.getBalance(a)),'tPOT')))"
+```
 
-## 1:40 — The trust model
+**Say / caption:**
+> Before the claim the signer held 0 tPOT. During the claim they signed a message — no transaction,
+> no gas. After the claim they still hold 0. The sponsor paid 3.8695 tPOT. The claimant never had a
+> balance to pay with.
 
-**Shot:** the three trust cards.
+**On-screen proof:** `0.0 tPOT` for the claimant before and after; sponsor balance; then the claim
+transaction on the explorer.
 
-> The contract trusts nobody except the signature. The sponsor is untrusted: it can refuse to pay or
-> go offline, but it cannot forge a claim and it cannot bind a name to somebody else's address.
-> A claim carries no value; the lite fallback is payable but has no withdraw, so nobody should send tPOT to it.
+**Shot:** explorer `https://node-console.portaldot.dev`, search
+`0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2`. Show status success,
+block 167209, the `Claimed` event, and the sponsor.
 
-## 2:00 — The dashboard, live
+## 1:20–1:50 — How the sponsored write works (30 s)
 
-**Shot:** the dashboard. Type `unify`.
+**Shot:** homepage's three steps, then the relayer terminal with a refused request.
 
-> The state is read from the chain, not a cache. `unify` is taken — by the zero-balance signer — and
-> this is the claim that took it, with the sponsor that paid.
+```bash
+# a second claim for the live handle is refused before any gas is spent
+node scripts/relayer.mjs --contract PlaqueLite --port 8787 &
+curl -s -X POST http://127.0.0.1:8787/claim \
+  -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
+  --data '{"handle":"0x756e696679000000000000000000000000000000000000000000000000000000","who":"0xd35404A86f825741BA8a65a31Eb8ca1D52315Fe6","v":27,"r":"0x01","s":"0x01"}'
+```
 
-**Action:** type `unify` → the pill reads *taken* and the owner is `0xd354…15Fe6`. Then type an
-unused name → *needs-wallet* (or *available* once a wallet is connected), with its 32-byte key. Scroll to the sponsor ledger: one row, with the
-transaction link.
+**Say / caption:**
+> The signature covers the handle, the signer, the chain id and this contract. The relayer verifies
+> it off-chain, refuses a bad or taken claim before spending, and serializes the nonce. The contract
+> is still the authority: it recovers the signer and cannot bind the name to anyone else.
 
-## 2:20 — The honest engineering story
+**On-screen proof:** `handle already owned` or `bad r` (a refusal, no tx hash).
 
-**Shot:** the "How the live build differs" card.
+## 1:50–2:10 — The integration kit in 20 seconds (20 s)
 
-> One thing worth saying: this runtime reverts on the BLOCK-family opcodes, so my first contract
-> could not claim here at all. I proved that with two probe contracts, rebuilt the digest without any
-> block value, then hit the second constraint — the chain charges a deposit for every byte of code
-> and every storage entry. So the deployed build is 302 bytes, and one claim costs 3.87 tPOT, almost
-> all of it that storage deposit. The repository documents both constraints with transactions.
+**Shot:** `docs/INTEGRATE.md` on screen, then the local test output.
 
-## 2:30 — Close
+```bash
+node --test tests/relayer-policy.test.mjs tests/plaque-lite.test.mjs
+```
 
-**Shot:** the repository link.
+**Say / caption:**
+> Another builder copies three files: signature verification, the policy caps and the nonce queue.
+> The guide has the client snippet, the config surface, the storage slot and the event signature.
+> The same module is tested against Ganache with positive controls and refusals.
 
-> It is all open source: contracts, tests, the deployment and the verifier. Plaque, for the Portaldot
-> Hacker House 2026.
+**On-screen proof:** `# pass 15`, `# fail 0` (8 lite + 7 policy tests).
+
+## 2:10–2:30 — Honest limits (20 s)
+
+**Shot:** README "Limits up front".
+
+**Say / caption:**
+> What this is not: the 302-byte build has no release or transfer; the registry is first-come. The
+> sponsor spends about 3.87 tPOT per claim, almost all of it the chain's storage deposit, so 100
+> tPOT is roughly 25 writes, not thousands. There is one relayer key; it can only pay, but a leak
+> can drain it. The contract accepts the zero handle if validly signed — the app and relayer refuse
+> it, and the deployed contract cannot be changed.
+
+## 2:30–2:50 — Close (20 s)
+
+**Shot:** repository link and the live claim header.
+
+**Say / caption:**
+> Everything is open: the 302-byte contract, the 41 tests, the live claim, the verifier and the
+> integration guide. Plaque — a sponsored write on Portaldot, proved by a claim from an account that
+> held zero. Repository: github.com/unifyWeb3/plaque.
 
 ---
 
-## If a live claim is funded (optional, +40 s)
+## Rehearsal checklist
 
-With ≈4 tPOT in the sponsor, run `npm run claim <contract> <handle>` on camera: the claimant signs,
-the sponsor pays, the storage slot and the event appear, and the claimant's balance stays at 0. The
-registry and the ledger update on the next page load.
+- [ ] Browser zoom 100%; terminal font large enough to read at 1280×900.
+- [ ] `npm run verify:live` passes before recording; note the block number it prints.
+- [ ] The claimant and sponsor addresses are pasted from `config/plaque.json`, not typed by hand.
+- [ ] The explorer tab is pre-opened on the claim tx; no waiting for indexing.
+- [ ] The relayer refusal is rehearsed: the taken handle is refused before a tx.
+- [ ] The 20-second integration segment shows `docs/INTEGRATE.md` and the test pass count.
+- [ ] Total runtime is under 3:00; cut the optional live claim first if over.
 
-## Commands to reproduce every claim in the script
+## Fallback with no funds (record this if the live claim cannot be funded)
+
+No new transaction is needed. The existing claim tx is the proof:
+
+1. `npm run verify:live` → ten PASS lines and `ALL CHECKS PASSED`.
+2. Explorer: `0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2`
+   (block 167209, status success, `Claimed` event).
+3. Dashboard: type `unify` → `taken`, owner `0xd354…15Fe6`, sponsor `0x064e…4fD5`.
+4. `npm run demo` → the same mechanic on a local chain, clearly labelled "local".
+
+## Sponsor balance / top-up
+
+The sponsor `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5` holds **0.874819 tPOT**. Under the default
+policy (fixed 1.3e14 gas limit, 32,350 wei gas price, 0.1 tPOT reserve) one claim needs a **4.3055
+tPOT balance**; the actual spend is **≈3.87 tPOT**. It can fund **0** live claims today.
+
+For one live claim on camera, top up at least **3.4307 tPOT** (to 4.3055); **5 tPOT** is the
+recommended buffer (top up **4.1252 tPOT**). If you do not top up, record the fallback; it is a
+complete proof of the same live claim.
+
+## Commands to reproduce every number
 
 ```bash
-npm run compile && npm test                      # 33 tests, all passing
-npm run demo                                     # the mechanic on a local chain (labelled as such)
-npm run verify:live                              # 10 checks against the live testnet
-node scripts/deploy-any.mjs PlaqueLite           # deploy (needs a funded wallet)
-npm run claim -- <contract> <handle>             # a live sponsored claim
-npm run relayer -- --contract PlaqueLite         # a sponsor
-cd web && npm run build && npm run start         # the frontend
-node web/scripts/qa-browser.mjs http://127.0.0.1:3000   # the browser QA
+npm ci
+npm run compile && npm test                     # 41 tests
+npm run demo                                    # local sponsored write (labelled)
+npm run verify:live                             # 10 checks against the live testnet
+npm run probe:zero                              # zero-address / invalid-sig / zero-handle eth_call
+node scripts/deploy-any.mjs PlaqueLite          # deploy (needs a funded wallet)
+npm run claim -- <contract> <handle>            # a live sponsored claim
+npm run relayer -- --contract PlaqueLite        # a sponsor
+cd web && npm ci && npm run typecheck && npm run lint && npm run build
+node web/scripts/qa-browser.mjs http://127.0.0.1:3000
 ```

@@ -1,9 +1,10 @@
 # Plaque
 
-**A sponsored handle registry for the Portaldot V3 testnet. You sign; a sponsor pays; your name is on
-chain.**
+**A reference implementation of a sponsored (gasless) write on Portaldot.** A user with a zero
+balance signs one message; a relayer verifies it and pays; the chain records who signed. The handle
+registry is the example write, not the pitch.
 
-Built for the **Portaldot Hacker House 2026** — Track 4, *Ecosystem DApps*.
+Built for the **Portaldot Hacker House 2026** — **Modular Cloud & Middleware** track.
 
 | | |
 |---|---|
@@ -16,28 +17,57 @@ Built for the **Portaldot Hacker House 2026** — Track 4, *Ecosystem DApps*.
 | Explorer | <https://node-console.portaldot.dev> |
 | Frontend | `web/` (Next.js 15, App Router) — live at **https://plaque-oxunify.vercel.app** |
 | Repository | **https://github.com/unifyWeb3/plaque** |
-| Tests | `npm test` — **33 tests, 33 pass, exit 0** |
+| Tests | `npm test` — **41 tests, 41 pass, exit 0** |
+| Integration | `docs/INTEGRATE.md` — relayer module, client snippet, config, local proof |
 
----
+## Limits up front
+
+These are properties of the deployed build, not roadmap items:
+
+* **No release, transfer or renewal.** The 302-byte build only claims a first-come handle.
+* **The sponsor pays a real deposit.** One live claim spends about **3.87 tPOT**, almost all of it
+  the chain's storage deposit. A 100 tPOT sponsor budget is roughly 25 writes, not thousands.
+* **One relayer key.** It can only pay, but if it leaks its balance is drainable. The reference
+  relayer caps what one key can lose; it cannot make the key unforgeable.
+* **The registry is first-come.** A free name can be bound to any address that signs; the deposit is
+  the deterrent.
+* **The contract accepts the zero handle** if validly signed (the app and relayer refuse it). The
+  zero *address* is refused. Section 5 states the exact boundary.
+* **The hosted app has no sponsor key.** It reads the chain and produces the signed payload; it does
+  not send a transaction. Run the relayer locally or host it yourself.
 
 ## 1. The problem, and who has it
 
 Portaldot is a new chain with a new token. A brand-new account holds **0 tPOT**, so it cannot make a
-single on-chain record — and testnet POT is handed out by hand through a Discord support ticket.
+single on-chain record — and testnet POT is handed out by hand through a manual support ticket.
 Every person who arrives at the Portaldot ecosystem is therefore stuck at zero: they cannot claim a
 name, register for a program, or leave any trace of themselves on the chain, and no dApp can ask them
 to buy gas before they use it.
 
-The audience is exactly that group: people joining the Portaldot ecosystem (the ~168 hackers
-registered for this hackathon, ecosystem newcomers, and builders shipping their first dApp) — plus the
-operators who want a permissionless directory instead of a hand-maintained list.
+Plaque isolates the reusable part of the answer: a **sponsored write**. The user signs; a relayer
+verifies the signature off-chain and pays; the contract records the signer. The handle registry is
+the smallest useful write that demonstrates the rail end to end.
+
+The audience is two groups: people joining the Portaldot ecosystem (newcomers and builders shipping
+their first dApp), and dApp operators who want a permissionless directory instead of a hand-maintained
+list. The first group gets a write without a faucet round-trip; the second gets a reusable relayer
+pattern and a public registry.
+
+### Why this is the Modular Cloud & Middleware track
+
+The official track text asks for "decentralized middleware, storage/data components, and APIs based
+on Portaldot's modular architecture." Plaque is a relayer + signature-verification + storage/reader
+primitive that another dApp can reuse; the name registry is its reference consumer. It is not a
+consumer DeFi app, and it does not claim to be a full naming protocol. The reusable middleware is the
+sponsored-write rail; the registry is the proof.
 
 ## 2. The solution
 
 **Plaque** is a handle registry where the *user* never needs gas:
 
 1. The user picks a handle and signs **one message** with their wallet.
-2. A **sponsor** (a relayer, or the user's own wallet) submits the signed claim and pays.
+2. A **sponsor** (a relayer, or the user's own wallet) verifies the signature off-chain, submits the
+   signed claim and pays.
 3. The contract recovers the signature itself, binds the handle to the address that signed, and emits
    `Claimed(handle, who, sponsor)`. Anyone can read it back from the public RPC.
 
@@ -76,10 +106,10 @@ Both screenshots come from <https://plaque-oxunify.vercel.app> and are read stra
 ```
  browser (web/)                        sponsor (scripts/relayer.mjs)              Portaldot V3 testnet
  ─────────────────                     ────────────────────────────              ────────────────────
- user types "unify"                     watches for signed claims                PlaqueLite.sol
-      │                                        │                                     │
-      │  buildClaimDigestV2()  (web/lib/plaque.js)                                    │
-      │  wallet personal_sign  ──────────────────►  POST /claim {handle,who,v,r,s,…}   │
+ user types "unify"                     verifies signature off-chain              PlaqueLite.sol
+      │                                 applies IP/origin/owner/global caps            │
+      │  buildClaimDigestV2()  (web/lib/plaque.js)                                  │
+      │  wallet personal_sign  ──────────────────►  POST /claim {handle,who,v,r,s,…} │
       │                                        │                                     │
       │                                        └── eth_sendRawTransaction ───────────►  claim
       │                                                                                  │
@@ -95,6 +125,10 @@ Both screenshots come from <https://plaque-oxunify.vercel.app> and are read stra
   its balance can be drained, but it cannot forge a claim or choose a recipient. It lives in a
   gitignored file with `0600` permissions and is never in the frontend, a commit, a build log or a
   deployment configuration.
+* **The relayer checks before spending:** signature recovery (nonzero, matching `who`, domain-bound),
+  canonical handle, taken slot, fixed gas limit, per-IP/per-origin/per-owner limits, a global
+  claim/spend budget and a minimum-balance reserve. A request that fails any check is refused before
+  a transaction is signed.
 
 ## 4. The contracts: readable reference vs. deployed build
 
@@ -169,7 +203,7 @@ Plaque live verification - block 171462
 ALL CHECKS PASSED
 ```
 
-## 5. Trust model and limitations
+## 5. Trust model, zero-key boundary and limitations
 
 * The contract trusts nobody except the ECDSA signature, checked against the address in the claim.
   The live verification exercises that on chain: a valid signature is accepted, a tampered one is
@@ -199,24 +233,42 @@ ALL CHECKS PASSED
   chain would charge for, and neither is needed for the demo. The readable `PlaqueV2.sol` keeps
   `release`; neither deployed build has a window.
 * **What this is not:** a full name service. There is no resolver, reverse lookup, profile record,
-  transfer, renewal or (in the deployed build) release. A public ENS-style `.pot` naming service
-  already covers that broader surface; Plaque does not claim novelty in the category. It claims a
-  live, measured sponsored write and a reproducible 302-byte deployment.
-* **Integration:** `docs/INTEGRATION.md` has dependency-free TypeScript readers for the owner
-  mapping and the `Claimed` events.
+  transfer, renewal or (in the deployed build) release. A broader public name service already exists;
+  Plaque does not claim novelty in the category. It claims a live, measured sponsored
+  write and a reproducible 302-byte deployment.
+* **Integration:** `docs/INTEGRATE.md` has the relayer module, the client signature, the config
+  surface, dependency-free TypeScript readers, the storage layout and the event signature.
+
+### The exact zero-key boundary
+
+Three different things were previously easy to conflate:
+
+| Input | Contract result | Who owns / pays |
+|---|---|---|
+| `who == 0` (zero address) | **refused** before the signature check | nobody |
+| invalid signature, nonzero `who` | **refused** because `ecrecover` returns 0 and `0 != who` | nobody |
+| `handle == 0`, valid signature, nonzero `who` | **accepted** by the deployed lite contract | the signer owns the zero handle; the sponsor pays the deposit |
+
+`node scripts/probe-zero-key.mjs` reproduces all three on the live contract with `eth_call` only
+(no transaction, no funds). The app and the reference relayer reject the zero handle, but a direct
+caller can still claim it with their own gas. The contract cannot prevent that without a redeploy;
+the submitted contract is frozen. The relayer check is off-chain policy, not a contract guarantee.
 
 ## 6. Install and run
 
 ```bash
 git clone https://github.com/unifyWeb3/plaque.git
 cd plaque
-npm install                     # solc-js, ethers, ganache, @polkadot/api
+npm ci                          # solc-js, ethers, ganache, @polkadot/api; lockfile verified
 npm run compile                 # compile the contracts with solc-js into build/
-npm test                        # 33 unit tests on ganache
+npm test                        # 41 tests, including a local Ganache chain
 npm run verify:live             # read-only verification against the live testnet
 
 cd web
-npm install
+npm ci
+npm run typecheck
+npm run lint                    # ESLint via next lint, configured
+npm run build
 npm run dev                     # http://localhost:3000
 ```
 
@@ -224,7 +276,7 @@ Run a sponsor (a local operator job; the key never leaves the machine):
 
 ```bash
 node -e "const {Wallet}=require('ethers'),fs=require('fs');fs.writeFileSync('secrets/sponsor.key',Wallet.createRandom().privateKey+'\n',{mode:0o600})"
-node scripts/relayer.mjs --contract PlaqueLite --port 8787
+node scripts/relayer.mjs --contract PlaqueLite --port 8787 --policy config/relayer-policy.example.json
 # then: export NEXT_PUBLIC_SPONSOR_URL=http://127.0.0.1:8787/claim   (before `next build`)
 ```
 
@@ -250,8 +302,8 @@ No secret is ever needed to build or serve the frontend.
 
 ```
 $ npm test
-# tests 33
-# pass 33
+# tests 41
+# pass 41
 # fail 0
 $ echo $?
 0
@@ -277,7 +329,7 @@ positive control:
 15. every contract error is described by the SDK;
 16. the wei → tPOT conversion matches the chain's ratio.
 
-**`tests/plaque-lite.test.mjs` (7 tests)** — the deployed build:
+**`tests/plaque-lite.test.mjs` (8 tests)** — the deployed build:
 
 1. the runtime is ≤320 bytes and byte-identical to the artifact;
 2. the lite build and the Solidity build accept the same digest scheme and the same signature;
@@ -287,11 +339,17 @@ positive control:
 5. the event signature matches what a decoder expects;
 6. a signature bound to another chain or contract is refused, and the lite build has no `release`;
 7. a documented limitation: the lite contract accepts the zero key if validly signed (the app and
-   relayer refuse it; fixing it needs a redeploy).
+   relayer refuse it; fixing it needs a redeploy);
+8. the sponsor kit validates off-chain, applies the policy, writes through a local Ganache chain and
+   reads the owner back — with duplicate-owner, bad-signature and zero-key refusals after the
+   positive control.
 
 **`tests/consistency.test.mjs` (7 tests)** — config, docs, bytecode and address consistency.
 
 **`tests/relayer.test.mjs` (3 tests)** — pre-flight signature, canonical-handle and gas-limit rules.
+
+**`tests/relayer-policy.test.mjs` (7 tests)** — per-IP, per-origin, per-owner, global claim/spend
+budgets and the minimum-balance guard, each with a positive control and a window-reset case.
 
 Browser QA (`web/scripts/qa-browser.mjs`, Playwright/Chromium): screenshots at 390×844 and 1280×900,
 no horizontal overflow, an `h1` on every screen, a visible focus outline on the first tab stop, and no
@@ -338,26 +396,24 @@ same mechanic is the one verified live above; `npm run verify:live` is the chain
 contracts/     Plaque.sol (reference, deployed first) · PlaqueV2.sol (readable, chain-compatible)
                PlaqueLite.sol (deployed) · Gate.sol, Probe*.sol (the diagnostics behind section 4)
 web/           Next.js app: homepage, dashboard, chain reader, the shared SDK, the browser QA script
-scripts/       compile · deploy · claim · verify-live · relayer · chain probes (read-only except deploys)
-tests/         the 33 unit tests
+scripts/       compile · deploy · claim · verify-live · relayer · relayer policy · chain probes
+tests/         the 41 unit tests (including the local-chain sponsor-kit test)
 state/         the research, the decision, the design, the chain limitation, the project memory
 submission/    the BUIDL text, the demo script, the pitch outline, the check-in, the checklist
-docs/          integration snippets for reading the registry and verifying a claim
+docs/          INTEGRATE.md: the relayer module, client, config, readers, storage layout
 ```
 
-## 9. The one thing the operator can still add
+## 9. Sponsor balance and a live demo
 
-The live registry works, and `npm run verify:live` re-proves it. What is *not* funded is volume: the
-sponsor wallet holds **0.87 tPOT**. A claim needs a **4.29 tPOT balance** to cover the fixed
-`1.3e14` gas limit (the pool requires `balance >= gasLimit × gasPrice`), of which **≈3.87 tPOT** is
-actually spent on the storage deposit. A faucet top-up of ~40 tPOT would pay for about nine more
-live claims in the demo:
+The sponsor wallet holds **0.874819 tPOT**. Under the default policy (fixed `1.3e14` gas limit,
+32,350 wei gas price, 0.1 tPOT reserve) one claim needs a **4.3055 tPOT balance**; the actual spend
+is **≈3.87 tPOT**. The current balance therefore funds **0** live claims.
 
-> **Discord → <https://discord.gg/portaldot> → support ticket**, with
-> **(a)** a screenshot of the hackathon registration and
-> **(b)** the address **`5Hkx9RshKpqfvttQFTc5Ze7JbuunB6FP488X3eBzGPY9WYTf`**.
-
-Nothing in the submission depends on it: the claim in the header is already live.
+For one live claim on camera, top up at least **3.4307 tPOT** to reach 4.3055 tPOT; **5 tPOT** is the
+recommended buffer (top up **4.1252 tPOT**). The sponsor address is
+`0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`. Nothing in the submission depends on a new claim:
+the existing claim tx is already live, and the fallback demo (`npm run verify:live` + the existing tx)
+needs no funds.
 
 ## 10. Roadmap
 

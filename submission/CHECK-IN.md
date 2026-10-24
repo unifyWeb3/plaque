@@ -118,11 +118,12 @@ before the final submission.
 This file is preserved as the submitted check-in. Two details changed during the audit; the current
 README/EVIDENCE are authoritative:
 
-* `npm test` is now **33 tests, 33 pass** (16 readable + 7 lite + 7 consistency + 3 relayer). The
+* `npm test` is now **41 tests, 41 pass** (16 readable + 8 lite + 7 consistency + 3 relayer + 7 policy). The
   original 21 count was the old two-file suite.
 * The verifier's tenth check is **“a zero address is refused”**, not “an empty handle is refused”.
   The deployed `PlaqueLite` accepts the zero *handle* if it is validly signed; the app and relayer
-  reject it, and `tests/plaque-lite.test.mjs` records the limitation. A redeploy would need ~4.29
+  reject it, and `tests/plaque-lite.test.mjs` plus `scripts/probe-zero-key.mjs` record the exact
+  boundary. The zero *address* and an invalid signature are refused. A redeploy would need ~4.3055
   tPOT of gas-limit cover and would change the contract address, so it was not done.
 * `npm run compile` now pins the per-contract settings and canonical source key, so it reproduces
   the deployed bytecode exactly from a clean clone. The verifier needs no secret.

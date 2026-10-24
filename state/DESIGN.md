@@ -10,7 +10,7 @@
 claim; a sponsor submits it and pays the chain fee and storage deposit. The binding is public and
 readable through the RPC.
 
-**Track:** 4 · Ecosystem DApps (consumer-facing application).
+**Track:** Modular Cloud & Middleware (sponsored-write rail; the registry is the reference consumer).
 
 ---
 
@@ -115,11 +115,11 @@ offer a release action.
   - `Gate`: `viaIR: false`, runs 1, `none`.
 - Deploy script computes the deposit-driven gas window from the balance and the measured rate and
   fails closed. A deployment needs a funded sponsor; the current sponsor holds 0.87 tPOT, below the
-  ~4.29 tPOT gas-limit requirement for one claim.
+  ~4.3055 tPOT gas-limit requirement for one claim under the default reserve.
 - After deployment: fetch the code, compare the raw keccak (and the metadata-stripped runtime), run
   the claim, read the event and storage at a pinned block, and record the hashes.
 
-## 8. Test plan (33 tests)
+## 8. Test plan (41 tests)
 
 - `tests/plaque.test.mjs` (16): readable build, legitimate path, refusals with positive controls,
   digest vs Solidity, release access control, UI state, refusals list, unit conversion.

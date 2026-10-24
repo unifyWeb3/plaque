@@ -11,7 +11,7 @@
 2. **A redeploy would invalidate the only live claim.** The existing claim tx
    `0xa654bd9c…edf2` (block 167209) is the evidence for the zero-balance sponsored write. A new
    address would need a new claim, new evidence, and a new verifier run.
-3. **It is not funded.** The sponsor holds 0.8748 tPOT. One claim needs a 4.29 tPOT balance to
+3. **It is not funded.** The sponsor holds 0.8748 tPOT. One claim needs a 4.3055 tPOT balance under the default 0.1 tPOT reserve to
    cover the fixed 1.3e14 gas limit; the live claim already spent 3.87 tPOT. A new 302-byte
    deployment needs ~36.7 tPOT of code deposit. The readable 741-byte `PlaqueV2` needs ~74.5 tPOT.
 4. **A larger build would be a different product.** Adding `release`, a validity window, or a

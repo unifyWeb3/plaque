@@ -1,8 +1,8 @@
-// Plaque — sponsored handle registry for the Portaldot V3 testnet.
+// Plaque — a reference sponsored write for the Portaldot V3 testnet.
 export const metadata = {
-  title: 'Plaque — claim your name on Portaldot with one signature',
+  title: 'Plaque — a sponsored write on Portaldot with one signature',
   description:
-    'Plaque is a sponsored handle registry on the Portaldot V3 testnet: you sign, a sponsor pays the gas, and the hosted app produces the exact signed claim. Testnet only.',
+    'Plaque is a reference implementation of a sponsored (gasless) write on the Portaldot V3 testnet: a zero-balance user signs, a relayer pays, and the chain records who claimed. The handle registry is the example. Testnet only.',
 };
 
 export const viewport = {

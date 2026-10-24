@@ -5,8 +5,9 @@ written to drop into a short field.*
 
 ## One-liner
 
-**Claim your name on Portaldot without paying a thing — you sign, a sponsor pays, and the binding is
-public and verifiable. It is already live on the V3 testnet.**
+**Plaque is a reference implementation of a sponsored (gasless) write on Portaldot: a user with a
+zero balance signs once, a relayer verifies and pays, and the chain records who claimed. The handle
+registry is the example write.**
 
 ## Project name
 
@@ -14,24 +15,27 @@ Plaque
 
 ## Track
 
-4 · Ecosystem DApps (consumer-facing application). The sponsored-write rail underneath it is
-middleware (track 1).
+**Modular Cloud & Middleware.** The official track asks for "decentralized middleware, storage/data
+components, and APIs based on Portaldot's modular architecture." The reusable artifact here is the
+sponsored-write rail: off-chain signature verification, domain binding, rate/budget policy, nonce
+handling and a Solidity reader. The registry is the reference consumer, not a claim to be a full
+naming protocol.
 
 ## Problem
 
 On Portaldot a brand-new account holds 0 tPOT, so it cannot make a single on-chain record — and
-testnet POT is handed out by hand through a Discord ticket. Every newcomer is stuck at zero: they
-cannot claim a name, register for a program, or leave any trace on the chain, and no dApp can ask
-them to buy gas before they use it. The chain's runtime includes `MetaTx` and `VerifySignature`. Plaque does **not** use `MetaTx`: the
+testnet POT is handed out by hand through a manual support ticket. Every newcomer is stuck at zero, and every
+dApp that wants to grow has the same wall: it must ask people to buy gas before they can use it.
+Plaque isolates the reusable answer: the user signs; a sponsor pays; the chain records the signer.
+
+The chain's runtime includes `MetaTx` and `VerifySignature`. Plaque does **not** use `MetaTx`: the
 sponsored-write rail is an ordinary EIP-1559 transaction sent by a sponsor, which works on V3 today.
 `MetaTx` integration is on the roadmap, not in the claim path.
 
 ## Solution
 
-Plaque is a handle registry where the user never needs gas:
-
 1. the user picks a handle and signs **one message** with their wallet;
-2. a **sponsor** (a relayer, or the user's own wallet) submits the signed claim and pays;
+2. a **sponsor** verifies the signature off-chain, submits the signed claim and pays;
 3. the contract recovers the signature itself, binds the handle to the address that signed, and emits
    `Claimed(handle, who, sponsor)`. The registry is readable by anyone from the public RPC.
 
@@ -43,8 +47,10 @@ refuse to pay but cannot forge a claim or choose who receives a name.
 
 Solidity 0.8.28 (solc-js, no native toolchain needed) on the **Portaldot V3 testnet** EVM
 (`pallet-revive`, chain id 420420777) · Next.js 15 / React 19 frontend · a dependency-free SDK
-(handle normalisation, the claim digest, the UI state function) · a sponsor relayer in Node · **33
-unit tests** on ganache · a read-only live verifier.
+(handle normalisation, the claim digest, the UI state function) · a sponsor relayer in Node with
+off-chain signature checks, a fixed gas limit, serialized nonces and per-IP/per-origin/per-owner plus
+global budget caps · **41 tests** on Ganache · a read-only live verifier · `docs/INTEGRATE.md` for
+another builder.
 
 The deployed contract is **302 bytes**: a fallback-only assembly body with the same digest and the same
 storage slot as the readable build. Its `Claimed(bytes32,address,address)` event is the three-address
@@ -77,6 +83,15 @@ storage entry it keeps (≈3.84 tPOT for one registry entry).
    (`PlaqueLite.sol`), which fits the deposit the wallet could pay — and it claimed live.
    `tests/plaque-lite.test.mjs` proves the two builds accept the same signatures and produce the same
    owner mapping. The lite build deliberately has no `release` and no validity window.
+
+## Honest limits
+
+* No release, transfer or renewal in the 302-byte build; the registry is first-come.
+* The sponsor spends a real **≈3.87 tPOT** per claim, almost all of it the storage deposit.
+* One relayer key; it can only pay, but a leak can drain its balance. The policy caps the loss.
+* The contract accepts the zero handle if validly signed; the app and relayer refuse it. The zero
+  address is refused. The deployed contract is frozen.
+* The hosted app has no sponsor key and sends no transaction.
 
 ## Roadmap
 
