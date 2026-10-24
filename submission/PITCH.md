@@ -1,5 +1,7 @@
 # One-page pitch — Plaque
 
+> The slide deck is `submission/Plaque-pitch-deck.pdf` (9 slides, generated from `submission/deck.html`).
+
 **Claim your name on Portaldot without paying a thing.**
 You sign, a sponsor pays, and the binding is public and verifiable. It is already live on the V3
 testnet — signed by an account that holds zero.

@@ -162,9 +162,8 @@ server-side. SDK: `web/lib/plaque.js` (`buildClaimDigest` v1, `buildClaimDigestV
 1. **Submit the check-in by 2026-10-24 12:00Z** — paste `submission/CHECK-IN.md` into DoraHacks.
 2. **Record the demo video** (≤3 min) from `submission/DEMO-SCRIPT.md`; the proof shot is
    `npm run verify:live`.
-3. **Publish the pitch deck** (PDF) from `submission/PITCH.md`.
-4. **Fill and submit the final DoraHacks form** from `submission/BUIDL.md` before 2026-11-06 04:00Z.
-5. *(optional)* **Top up ≈40 tPOT to `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`** for ~10 more
+3. **Fill and submit the final DoraHacks form** from `submission/BUIDL.md` before 2026-11-06 04:00Z.
+4. *(optional)* **Top up ≈40 tPOT to `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`** for ~10 more
    live claims on camera. Nothing submitted depends on it.
 
 ## 9. Public URLs and repo state

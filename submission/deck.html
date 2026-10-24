@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plaque — pitch deck</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  :root {
+    --bg: #0c0e12; --panel: #151a21; --line: #26303c;
+    --ink: #e9edf2; --dim: #a8b3c0; --faint: #78838f;
+    --amber: #f0b429; --mint: #62d29b; --rose: #f0736f;
+    --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { width: 1280px; height: 720px; padding: 64px 72px; position: relative; page-break-after: always; break-after: page; overflow: hidden; }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .kicker { font-family: var(--mono); font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); margin: 0 0 18px; }
+  h1 { font-size: 64px; line-height: 1.04; margin: 0 0 24px; letter-spacing: -0.02em; }
+  h2 { font-size: 44px; line-height: 1.1; margin: 0 0 28px; letter-spacing: -0.015em; }
+  h3 { font-size: 22px; margin: 0 0 8px; }
+  p { font-size: 22px; line-height: 1.45; color: var(--dim); margin: 0 0 14px; max-width: 62ch; }
+  p.lede { font-size: 26px; color: var(--ink); }
+  .muted { color: var(--faint); }
+  .mono { font-family: var(--mono); }
+  .amber { color: var(--amber); }
+  .mint { color: var(--mint); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; }
+  .card p { font-size: 18px; margin: 0; }
+  .num { font-family: var(--mono); font-size: 15px; color: var(--amber); display: block; margin-bottom: 10px; }
+  .fact { font-family: var(--mono); font-size: 15px; color: var(--dim); word-break: break-all; line-height: 1.5; }
+  .fact b { color: var(--ink); font-weight: 600; }
+  .big { font-family: var(--mono); font-size: 34px; color: var(--ink); }
+  .rule { height: 1px; background: var(--line); margin: 26px 0; }
+  .footer { position: absolute; left: 72px; right: 72px; bottom: 30px; display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; color: var(--faint); }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; font-family: var(--mono); font-size: 14.5px; line-height: 1.55; color: var(--dim); margin: 0; white-space: pre-wrap; }
+  pre b { color: var(--mint); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 19px; }
+  th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); }
+  th { font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  td.n { font-family: var(--mono); color: var(--ink); }
+  .pill { display: inline-block; font-family: var(--mono); font-size: 14px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide">
+  <p class="kicker">Portaldot Hacker House 2026 · Track 4</p>
+  <h1>Claim your name on Portaldot.<br />You don&rsquo;t pay anything.</h1>
+  <p class="lede">Plaque is a sponsored handle registry: you sign one message, a sponsor pays, and your
+  name is bound on chain. It is already live on the V3 testnet — and the claim that proves it was
+  signed by an account holding <span class="amber">0 tPOT</span>.</p>
+  <div class="rule"></div>
+  <div class="grid3">
+    <div><p class="kicker" style="margin-bottom:6px">Contract</p><p class="fact">0x5432e6b89dc3042d<br />47f2be98e971cad9<br />dabab685</p></div>
+    <div><p class="kicker" style="margin-bottom:6px">Live claim</p><p class="fact">block <b>167,209</b><br />claimant balance <b>0 wei</b><br />sponsor paid <b>3.87 tPOT</b></p></div>
+    <div><p class="kicker" style="margin-bottom:6px">Verify it</p><p class="fact">npm run verify:live<br /><b>10 checks, all passing</b></p></div>
+  </div>
+  <div class="footer"><span>Plaque</span><span>unify · @oxunify</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <p class="kicker">The problem</p>
+  <h2>A brand-new account holds zero, so it cannot record anything.</h2>
+  <div class="grid2">
+    <div>
+      <p>On Portaldot a new account starts at <span class="amber">0 tPOT</span>. It cannot send a
+      transaction, claim a name, register for a program or leave any trace on chain.</p>
+      <p>Testnet POT is handed out by hand through a Discord support ticket. So the first experience of
+      the ecosystem is: wait for a human.</p>
+      <p>And every dApp that wants to grow has the same wall: it must ask people to buy gas before they
+      can use it.</p>
+    </div>
+    <div class="card">
+      <p class="kicker" style="margin-bottom:14px">The chain already ships the fix</p>
+      <p style="font-size:19px;margin-bottom:12px"><span class="mono mint">MetaTx</span> — fee payment can be
+      delegated, so a signature can be submitted by somebody else.</p>
+      <p style="font-size:19px;margin-bottom:12px"><span class="mono mint">VerifySignature</span> — the
+      runtime can check a signature natively.</p>
+      <p style="font-size:19px"><span class="mono mint">pallet-revive</span> — an EVM, so ordinary
+      Solidity works.</p>
+      <div class="rule" style="margin:18px 0"></div>
+      <p style="font-size:18px;color:var(--faint)">Nobody has built the layer that uses them.</p>
+    </div>
+  </div>
+  <div class="footer"><span>The problem</span><span>2 / 9</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <p class="kicker">The solution</p>
+  <h2>Three steps. The user pays nothing.</h2>
+  <div class="grid3">
+    <div class="card"><span class="num">01</span><h3>You sign</h3><p>Pick a handle. Your wallet signs one
+    EIP-191 message. No transaction, no gas, no account funding.</p></div>
+    <div class="card"><span class="num">02</span><h3>A sponsor pays</h3><p>A relayer — or your own wallet —
+    submits the signed claim and pays the chain's fee. The sponsor is recorded in the event.</p></div>
+    <div class="card"><span class="num">03</span><h3>The contract binds it</h3><p>It recovers the signer
+    itself and writes the handle to that address. Anyone can read it back from the public RPC.</p></div>
+  </div>
+  <div class="rule"></div>
+  <p class="lede" style="max-width:none">The digest binds the handle, the claimant, the chain id and the
+  contract — so a signed claim cannot be replayed onto another name, another address, another chain or
+  another contract.</p>
+  <p class="mono" style="font-size:16px;color:var(--faint)">keccak256(abi.encode(bytes32(1), handle, who, 420420777, contract)) → personal_sign</p>
+  <div class="footer"><span>How it works</span><span>3 / 9</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <p class="kicker">Live proof — not a mock</p>
+  <h2>One command re-checks the whole thing.</h2>
+  <div class="grid2" style="grid-template-columns: 1.15fr 0.85fr">
+<pre>$ npm run verify:live
+Plaque live verification - block 167382
+
+  <b>PASS</b>  deployed code equals the committed build  302 bytes
+  <b>PASS</b>  ownerOf("unify") is the zero-balance claimant
+  <b>PASS</b>  the claimant still holds 0 wei
+  <b>PASS</b>  the Claimed event is on chain  block 167209
+  <b>PASS</b>  the event names the claimant as `who`
+  <b>PASS</b>  the event names the sponsor that paid
+  <b>PASS</b>  a valid signature is accepted (eth_call)
+  <b>PASS</b>  a tampered signature is refused
+  <b>PASS</b>  a signature for another address is refused
+  <b>PASS</b>  an empty handle is refused
+
+<b>ALL CHECKS PASSED</b></pre>
+    <div>
+      <div class="card" style="margin-bottom:16px"><p class="kicker" style="margin-bottom:10px">The claim</p>
+      <p class="fact">tx 0xa654bd9ce55b389c<br />072b00d0c4af55ab06<br />7d76acc422d5636b0c<br />62863786edf2</p>
+      <p class="fact" style="margin-top:12px">signed by <b>0xd35404…15Fe6</b><br />balance before / after: <b>0 / 0 wei</b><br />paid by <b>0x064e2C…4fD5</b></p></div>
+      <p style="font-size:17px">The deployed bytecode is byte-for-byte the committed source. The
+      signature checks run against live state, so they prove the contract&rsquo;s verification on the
+      real runtime.</p>
+    </div>
+  </div>
+  <div class="footer"><span>Evidence</span><span>4 / 9</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <p class="kicker">Built for this chain, measured</p>
+  <h2>The runtime taught us two things. We built to both.</h2>
+  <div class="grid2">
+    <div class="card">
+      <p class="kicker" style="margin-bottom:12px">1 · No block values</p>
+      <p style="font-size:19px">This EVM reverts on the BLOCK-family opcodes — <span class="mono">CHAINID</span>,
+      <span class="mono">TIMESTAMP</span>, <span class="mono">NUMBER</span>. Two probe contracts in the repo
+      prove it with reverted transactions.</p>
+      <p style="font-size:19px;margin-top:12px">So no deployed build reads a block value: the chain id is a
+      constant, and the digest binds it instead.</p>
+    </div>
+    <div class="card">
+      <p class="kicker" style="margin-bottom:12px">2 · Deposits, not just gas</p>
+      <table style="font-size:17px">
+        <tr><td>signature check + compute</td><td class="n">0.028 tPOT</td></tr>
+        <tr><td>storage deposit per new entry</td><td class="n">3.84 tPOT</td></tr>
+        <tr><td>code deposit (302 bytes)</td><td class="n">36.7 tPOT</td></tr>
+      </table>
+      <p style="font-size:17px;margin-top:14px">786 bytes cost 74.5 tPOT to deploy, which is why the live
+      build is <span class="mono">PlaqueLite.sol</span>: 302 bytes, same digest, same storage slot, same
+      event, differential-tested against the readable build.</p>
+    </div>
+  </div>
+  <div class="footer"><span>Engineering</span><span>5 / 9</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <p class="kicker">Trust model</p>
+  <h2>The contract trusts nothing but the signature.</h2>
+  <div class="grid3">
+    <div class="card"><h3>No custody</h3><p>No escrow, no bond, no arbitration. The contract holds no
+    user funds and mints nothing. The only value that moves is the chain&rsquo;s own deposit, paid by the
+    sponsor to the runtime.</p></div>
+    <div class="card"><h3>An untrusted sponsor</h3><p>It can refuse to pay, reorder claims or go offline.
+    It cannot forge a claim, and it cannot bind a name to somebody else&rsquo;s address.</p></div>
+    <div class="card"><h3>A dropped claim is recoverable</h3><p>The claim is a signed message, not a
+    secret. Anybody can resubmit it — including the claimant with their own gas.</p></div>
+  </div>
+  <div class="rule"></div>
+  <p class="lede">A name is permanent once bound, and the registry is readable by any app from the public
+  RPC.</p>
+  <p class="muted" style="font-size:18px">Known limit, stated openly: a gasless claim can be griefed by
+  binding a free name to an address nobody controls. Here that costs ≈3.87 tPOT per squatted name —
+  expensive enough to deter, and a claim-then-confirm grace period would remove it.</p>
+  <div class="footer"><span>Trust</span><span>6 / 9</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <p class="kicker">Who it is for</p>
+  <h2>The first consumer app on Portaldot, and the rail under it.</h2>
+  <div class="grid2">
+    <div>
+      <p><b style="color:var(--ink)">Users.</b> The ~143 hackers in this event, ecosystem newcomers, and
+      anyone who wants a name on chain before they have funds.</p>
+      <p><b style="color:var(--ink)">Builders.</b> Any Portaldot dApp can resolve a handle from the RPC and
+      can reuse the sponsored-write path instead of asking users to buy gas first.</p>
+      <p><b style="color:var(--ink)">The ecosystem.</b> The repository documents the chain's real cost and
+      opcode constraints with transactions — facts every builder here will hit.</p>
+    </div>
+    <div class="card">
+      <p class="kicker" style="margin-bottom:12px">The business</p>
+      <p style="font-size:19px;margin-bottom:12px">The sponsor is the customer: a hosted relayer with a
+      per-developer budget, settled in the chain's native <span class="mono">Assets</span> pallet so
+      sponsorship itself is on chain.</p>
+      <p style="font-size:19px;margin-bottom:12px">Unit economics are measured, not guessed: 3.87 tPOT per
+      sponsored write on this testnet, dominated by the storage deposit.</p>
+      <p style="font-size:19px">A permanent name registry is infrastructure: once apps resolve handles,
+      every later app reads the same table.</p>
+    </div>
+  </div>
+  <div class="footer"><span>Market</span><span>7 / 9</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <p class="kicker">Where it goes next</p>
+  <h2>Roadmap, in the order the risk disappears.</h2>
+  <table>
+    <tr><th>Step</th><th>Why</th><th>State</th></tr>
+    <tr><td class="n">Claim-then-confirm grace period</td><td>removes name griefing entirely</td><td><span class="pill">next</span></td></tr>
+    <tr><td class="n">Hosted sponsor + on-chain budget</td><td>a real service a dApp can point at</td><td><span class="pill">designed</span></td></tr>
+    <tr><td class="n">Release and signed transfers</td><td>names become movable property</td><td><span class="pill">readable build has it</span></td></tr>
+    <tr><td class="n">Public handle indexer</td><td>any Portaldot app resolves names from the RPC</td><td><span class="pill">planned</span></td></tr>
+    <tr><td class="n">Mainnet, cost model re-measured</td><td>the same contract, real deposits</td><td><span class="pill">after the testnet</span></td></tr>
+  </table>
+  <div class="rule"></div>
+  <p>The hard part is done and on chain: a signature-only claim from a zero-balance account, verified
+  byte-for-byte, readable by anyone.</p>
+  <div class="footer"><span>Roadmap</span><span>8 / 9</span></div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <p class="kicker">Plaque</p>
+  <h1 style="font-size:52px">A name on Portaldot,<br />without buying gas first.</h1>
+  <div class="grid2" style="margin-top:8px">
+    <div>
+      <p class="fact" style="font-size:16px">
+        <b>app</b> &nbsp; https://plaque-oxunify.vercel.app<br />
+        <b>repo</b> &nbsp; https://github.com/unifyWeb3/plaque<br />
+        <b>verify</b> &nbsp; npm run verify:live<br />
+        <b>tests</b> &nbsp; npm test — 21 / 21
+      </p>
+    </div>
+    <div>
+      <p class="fact" style="font-size:16px">
+        <b>contract</b> &nbsp; 0x5432e6b8…b685<br />
+        <b>deploy</b> &nbsp; tx 0xcee4d1db…3b3a · block 167,044<br />
+        <b>claim</b> &nbsp; tx 0xa654bd9c…edf2 · block 167,209<br />
+        <b>chain</b> &nbsp; Portaldot V3 testnet · 420420777
+      </p>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <p class="muted" style="font-size:17px">Testnet only. No audited code, no real value, no mainnet
+  deployment. Built by unify for the Portaldot Hacker House 2026.</p>
+  <div class="footer"><span>Plaque</span><span>9 / 9</span></div>
+</section>
+
+</body>
+</html>

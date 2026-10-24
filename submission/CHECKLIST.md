@@ -28,7 +28,7 @@ marked **form** — the field limits are not published, so the copy is deliberat
 | README: testnet deployment information | contract `0x5432e6b8…b685`, deployment tx, block 167044, bytecode comparison, the live claim tx, the measured cost |
 | Runnable demo | the deployed app **and** `npm run verify:live` **and** `npm run demo` (local, labelled) |
 | Demo video, ≤3 min, public link | `submission/DEMO-SCRIPT.md` is the shot-by-shot script — **the recording is still to do** |
-| Pitch deck, PDF or public link | `submission/PITCH.md` is the one-page outline — **the PDF is still to do** |
+| Pitch deck, PDF or public link | **`submission/Plaque-pitch-deck.pdf`** — 9 slides, generated from `submission/deck.html` (the one-page summary is `submission/PITCH.md`) |
 | Contract address and transaction hash | in the README, `submission/EVIDENCE.md` and the app |
 
 ## Rules to respect
@@ -52,9 +52,8 @@ marked **form** — the field limits are not published, so the copy is deliberat
 1. **Submit the check-in by 2026-10-24 12:00Z** — paste `submission/CHECK-IN.md`.
 2. **Record the demo video** (≤3 min) from `submission/DEMO-SCRIPT.md`; the proof shot is
    `npm run verify:live`.
-3. **Publish the pitch deck** (PDF) from `submission/PITCH.md`.
-4. **Fill the DoraHacks form** — the field limits are not published, so copy the short blocks from
+3. **Fill the DoraHacks form** — the field limits are not published, so copy the short blocks from
    `submission/BUIDL.md` as they are.
-5. *(optional)* **Top up ≈40 tPOT to `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`** for ~10 more
+4. *(optional)* **Top up ≈40 tPOT to `0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5`** for ~10 more
    live claims on camera (the sponsor holds 0.87 tPOT; one claim costs ≈3.87 tPOT).
-6. **Submit** — the operator submits; nothing in this repository submits on their behalf.
+5. **Submit** — the operator submits; nothing in this repository submits on their behalf.

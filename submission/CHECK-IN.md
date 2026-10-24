@@ -90,14 +90,14 @@ $ npm run verify:live
 ALL CHECKS PASSED
 ```
 
-The ≤3-minute demo video will be recorded from `submission/DEMO-SCRIPT.md` before the final
-submission.
+The pitch deck is in the repository: **`submission/Plaque-pitch-deck.pdf`** (9 slides, generated from
+`submission/deck.html`). The ≤3-minute demo video will be recorded from `submission/DEMO-SCRIPT.md`
+before the final submission.
 
 ## 6. Still outstanding
 
 1. **Demo video** (≤3 min) — shot list written (`submission/DEMO-SCRIPT.md`); recording next.
-2. **Pitch deck** (PDF) — the one-page content is written (`submission/PITCH.md`).
-3. **Volume, not function:** the sponsor wallet holds 0.87 tPOT and a claim costs ≈3.87 tPOT, so
+2. **Volume, not function:** the sponsor wallet holds 0.87 tPOT and a claim costs ≈3.87 tPOT, so
    further *live* claims need a small faucet top-up (~40 tPOT = ten claims). The submitted claim is
    already live; nothing in the submission depends on more.
 
