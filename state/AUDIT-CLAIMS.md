@@ -21,7 +21,7 @@ means the check has not been run. No claim is marked PASS from a README statemen
 | 13 | Relayer cannot be drained with a whole-balance gas limit; fixed 1.3e14 limit | **PASS** | `scripts/relayer-lib.mjs`; `tests/relayer.test.mjs`; code review. A leaked key can still drain its balance. |
 | 14 | RPC/chain mismatch fails closed | **PASS** | 09:02Z `PORTALDOT_RPC=http://127.0.0.1:8546 npm run verify:live` → exit 2, `RPC chain 1337 != config chain 420420777`. |
 | 15 | The web config is one canonical file | **PASS** | `config/plaque.json` and `web/lib/plaque-config.json` byte-identical; `tests/consistency.test.mjs` deep-equal + malformed-config refusals. |
-| 16 | Clean clone reproduces compile/tests/verifier | **NOT VERIFIED** | Pending Stage 8 clean clone. |
+| 16 | Clean clone reproduces compile/tests/verifier | **PASS** | `/tmp/opencode/audit/plaque-final` at `fbf1a0f`: `npm install` exit 0, compile exit 0, 33/33 tests exit 0, verifier exit 0 on retry (first attempt hit an RPC IPv6/network error), web `npm ci`/typecheck/build exit 0, demo exit 0, sweep exit 0. |
 | 17 | Hosted app is current | **FAIL** | `https://plaque-oxunify.vercel.app/` at 08:29Z still serves the old title and the old free-handle bug; redeploy pending. |
 | 18 | Demo video (required by the event) | **FAIL** | No video exists; only `submission/DEMO-SCRIPT.md` and a generated deck. |
 | 19 | The category is novel | **FAIL** | A public ENS-style `.pot` name service already exists (not named in this repo). Repositioned: no novelty claim; the claim is the live measured sponsored write and reproducibility. |
