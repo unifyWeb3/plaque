@@ -9,7 +9,7 @@
   },
   "scripts": {
     "compile": "node scripts/compile.mjs contracts/Plaque.sol contracts/PlaqueV2.sol contracts/PlaqueLite.sol contracts/Gate.sol",
-    "test": "node --test tests/plaque.test.mjs tests/plaque-lite.test.mjs",
+    "test": "node --test tests/plaque.test.mjs tests/plaque-lite.test.mjs tests/relayer.test.mjs tests/consistency.test.mjs",
     "relayer": "node scripts/relayer.mjs",
     "deploy": "node scripts/deploy-any.mjs",
     "sweep": "bash scripts/security-sweep.sh",

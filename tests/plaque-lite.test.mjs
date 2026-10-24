@@ -1,7 +1,7 @@
 /**
  * PlaqueLite vs PlaqueV2 — the two chain-compatible builds must implement the *same* claim.
  *
- * PlaqueLite is a fallback-only assembly build (301 bytes of runtime code) because Portaldot V3
+ * PlaqueLite is a fallback-only assembly build (302 bytes of runtime code) because Portaldot V3
  * charges the code deposit per byte. PlaqueV2 is the readable Solidity build. This suite proves
  * they agree, and that the lite build's raw-calldata interface is safe.
  *
@@ -192,4 +192,63 @@ test('the lite event signature matches the one a decoder expects', async () => {
   const iface = new Interface(['event Claimed(bytes32 indexed handle, address indexed who, address indexed sponsor)']);
   assert.equal(iface.getEvent('Claimed').topicHash, claimedTopic);
   assert.equal(handleNameFromKey(handleKey('unify')), 'unify');
+});
+
+test('the lite build refuses another chain and another contract, and has no release', async () => {
+  const claimant = await freshWallet();
+  const c = await deploy(lite, await freshWallet());
+  const sender = await freshWallet();
+  const key = handleKey('domain');
+  const good = await signFor(claimant, c.target, key);
+
+  const call = (data) => provider.call({ to: c.target, data });
+  const refused = async (data, label) => {
+    try {
+      await call(data);
+      assert.fail(`the contract accepted ${label}`);
+    } catch (err) {
+      if (err?.code === 'ERR_ASSERTION') throw err;
+    }
+  };
+
+  // positive control
+  assert.equal(await call(liteCalldata({ key, who: claimant.address, ...good })), '0x');
+
+  // a signature bound to another chain id
+  const otherChainDigest = buildClaimDigestV2({
+    handle: key, who: claimant.address, chainId: 1n, contract: c.target,
+  });
+  const otherChainSig = await claimant.signMessage(getBytes(otherChainDigest));
+  await refused(liteCalldata({
+    key, who: claimant.address,
+    v: parseInt(otherChainSig.slice(130, 132), 16),
+    r: '0x' + otherChainSig.slice(2, 66),
+    s: '0x' + otherChainSig.slice(66, 130),
+  }), 'a signature for another chain');
+
+  // a signature bound to another contract address
+  const otherContract = await deploy(lite, await freshWallet());
+  const otherContractSig = await signFor(claimant, otherContract.target, key);
+  await refused(liteCalldata({ key, who: claimant.address, ...otherContractSig }), 'a signature for another contract');
+
+  // the lite build has no release(): the fallback rejects calldata that is not exactly 5 words
+  const releaseIface = new Interface(['function release(bytes32)']);
+  await refused(releaseIface.encodeFunctionData('release', [key]), 'release()');
+
+  // the claim still succeeds after the refusals
+  await (await sender.sendTransaction({ to: c.target, data: liteCalldata({ key, who: claimant.address, ...good }) })).wait();
+  assert.equal(await storageOwner(c.target, key), claimant.address.toLowerCase());
+});
+
+test('known limitation: the lite contract accepts any 32-byte key, including the zero key', async () => {
+  const claimant = await freshWallet();
+  const c = await deploy(lite, await freshWallet());
+  const zeroKey = '0x' + '0'.repeat(64);
+  const sig = await signFor(claimant, c.target, zeroKey);
+  // The app and the relayer reject this key; the deployed contract itself does not. This test
+  // records the exact boundary so the README cannot claim an empty-handle refusal it does not have.
+  await (await (await freshWallet()).sendTransaction({
+    to: c.target, data: liteCalldata({ key: zeroKey, who: claimant.address, ...sig }),
+  })).wait();
+  assert.equal(await storageOwner(c.target, zeroKey), claimant.address.toLowerCase());
 });
