@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import config from '../lib/plaque-config.json';
 import { CONTRACT, DEPLOY_BLOCK, DEPLOY_TX, EXPLORER, headBlock, readEvents } from '../lib/chain';
 
 export const dynamic = 'force-dynamic';
@@ -38,10 +39,11 @@ export default async function Home() {
         'The contract recovers the signature itself and refuses anything that does not match.',
     },
     {
-      title: 'The name is on chain, forever',
+      title: 'The name is on chain',
       body:
-        'The handle is bound to your address in the contract state, and the sponsor, the gas ' +
-        'price and the block are written into the event log. Anyone can read it back.',
+        'The handle is bound to your address in the contract state. The sponsor is in the ' +
+        'Claimed event; the block is the log block and the gas price is in the receipt. ' +
+        'Anyone can read it back.',
     },
   ];
 
@@ -51,11 +53,12 @@ export default async function Home() {
         <div className="wrap hero-grid">
           <div>
             <p className="eyebrow">Portaldot Hacker House 2026 · Ecosystem DApps</p>
-            <h1>Claim your name on Portaldot. You don&rsquo;t pay anything.</h1>
+            <h1>Claim your name on Portaldot with one signature.</h1>
             <p className="lede">
               Plaque is a sponsored handle registry. A name is bound to the address that signed
               for it, a sponsor pays the gas, and the binding is permanent and readable by
-              anyone through the public RPC.
+              anyone through the public RPC. The hosted app has no sponsor key: it produces the
+              exact signed claim; run the relayer locally, or submit it from a funded wallet.
             </p>
 
             <div className="problem">
@@ -67,9 +70,9 @@ export default async function Home() {
               </p>
               <p className="muted" style={{ marginBottom: 0 }}>
                 <strong>The answer.</strong> The user signs a message, a sponsor pays for it.
-                The chain&rsquo;s cost model makes the sponsored write tiny: one write costs
-                about 0.0004 tPOT, so a sponsor can fund tens of thousands of names with a
-                single tPOT.
+                The chain&rsquo;s measured cost is about <strong>3.87 tPOT</strong> per claim,
+                almost all of it the storage deposit the runtime keeps for the new entry. A
+                100 tPOT sponsor budget therefore covers roughly 25 names, not tens of thousands.
               </p>
             </div>
 
@@ -88,7 +91,7 @@ export default async function Home() {
             </p>
             <dl className="kv">
               <dt>Chain</dt>
-              <dd>Portaldot V3 testnet · id 420420777 · pallet-revive EVM</dd>
+              <dd>Portaldot V3 testnet · id {config.chainId} · pallet-revive EVM</dd>
               <dt>Contract</dt>
               <dd className="mono" style={{ wordBreak: 'break-all' }}>{CONTRACT}</dd>
               <dt>Deployment</dt>
@@ -124,8 +127,8 @@ export default async function Home() {
               <dd>3.87<small>tPOT at block 167,209 — 0.03 computation + 3.84 storage deposit</small></dd>
             </div>
             <div>
-              <dt>Your balance</dt>
-              <dd>0<small>tPOT is enough to claim</small></dd>
+              <dt>Balance needed to sign</dt>
+              <dd>0<small>tPOT; the sponsor pays the write</small></dd>
             </div>
           </dl>
         </div>
@@ -169,15 +172,17 @@ export default async function Home() {
               <h3>The sponsor is untrusted</h3>
               <p className="muted">
                 A sponsor can refuse to pay, reorder claims or go offline &mdash; but it cannot
-                forge one. A claim is a signed message, so any other sponsor can submit it.
-                The contract never holds anybody&rsquo;s money.
+                forge one. A claim is a signed message, so any other sponsor can submit it until
+                the name is taken. The claim path carries value 0; the lite fallback is payable
+                but has no withdraw, so do not send tPOT to the contract.
               </p>
             </div>
             <div className="card">
               <h3>One key, and it only pays gas</h3>
               <p className="muted">
-                The relayer key is a single trusted key in the whole system, and all it can do
-                is pay gas. It is never in the frontend, never in a commit and never in the
+                The relayer key is a single trusted key in the whole system. In the protocol
+                all it can do is pay gas; if it leaks, its balance can be drained, but it cannot
+                forge a claim. It is never in the frontend, never in a commit and never in the
                 deployment configuration.
               </p>
             </div>

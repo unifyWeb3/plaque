@@ -1,8 +1,8 @@
 // Plaque — sponsored handle registry for the Portaldot V3 testnet.
 export const metadata = {
-  title: 'Plaque — claim your name on Portaldot, for free',
+  title: 'Plaque — claim your name on Portaldot with one signature',
   description:
-    'Plaque is a sponsored handle registry on the Portaldot V3 testnet: you sign, a sponsor pays the gas, and your name is on chain forever.',
+    'Plaque is a sponsored handle registry on the Portaldot V3 testnet: you sign, a sponsor pays the gas, and the hosted app produces the exact signed claim. Testnet only.',
 };
 
 export const viewport = {
@@ -12,6 +12,7 @@ export const viewport = {
 };
 
 import './globals.css';
+import config from '../lib/plaque-config.json';
 import Link from 'next/link';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -37,10 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="wrap footer-inner">
             <p>
               Plaque is a Portaldot Hacker House 2026 project. Live on the Portaldot V3 testnet
-              (chain id 420420777). Testnet only — no real value, no audited code, no mainnet deployment.
+              (chain id {config.chainId}). Testnet only — no real value, no audited code, no mainnet deployment.
             </p>
             <p className="mono muted">
-              contract 0x5432e6b89dc3042d47f2be98e971cad9dabab685 · 14-decimal tPOT · pallet-revive EVM
+              contract {config.contract} · 14-decimal tPOT · pallet-revive EVM
             </p>
           </div>
         </footer>

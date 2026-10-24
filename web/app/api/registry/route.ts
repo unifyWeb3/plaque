@@ -12,15 +12,16 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     const block = await headBlock();
-    const events = await readEvents(block);
     const handle = new URL(request.url).searchParams.get('handle');
+    const validHandle = handle && /^0x[0-9a-fA-F]{64}$/.test(handle);
 
-    let owner: string | null = null;
-    let ownerAtBlock: number | null = null;
-    if (handle && /^0x[0-9a-fA-F]{64}$/.test(handle)) {
-      owner = await readOwner(handle, block);
-      ownerAtBlock = block;
-    }
+    // The event scan and the owner read are independent; run them together so a keystroke does
+    // not wait for the whole log range before it can show the owner.
+    const [events, owner] = await Promise.all([
+      readEvents(block),
+      validHandle ? readOwner(handle, block) : Promise.resolve(null),
+    ]);
+    const ownerAtBlock = validHandle ? block : null;
 
     return NextResponse.json({
       ok: true,

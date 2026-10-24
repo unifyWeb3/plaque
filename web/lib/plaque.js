@@ -262,11 +262,15 @@ function keccakF(lanes) {
  * It is a function of chain state only — never of anything the UI invented.
  *
  * @param {{owner: string|null, connected: string|null, handle: {ok: boolean, reason?: string},
- *          now?: number, validUntil?: number}} state
+ *          now?: number, validUntil?: number, supportsRelease?: boolean}} state
  * @returns {{status: string, canClaim: boolean, canRelease: boolean, reason?: string}}
  */
 export function deriveHandleState(state) {
-  const { owner = null, connected = null, handle, now = 0, validUntil = 0 } = state ?? {};
+  const { owner = null, connected = null, handle, now = 0, validUntil = 0, supportsRelease = false } = state ?? {};
+  // The chain returns the zero address for an empty mapping slot. Treat it as "no owner", not as
+  // a taken handle: otherwise the dashboard disables every claim before a wallet is connected.
+  const zeroOwner = typeof owner === 'string' && /^0x0{40}$/i.test(owner);
+  const actualOwner = owner && !zeroOwner ? owner : null;
   if (!handle || !handle.ok) {
     const empty = handle && !handle.name && handle.reason === 'enter a handle';
     return {
@@ -276,12 +280,12 @@ export function deriveHandleState(state) {
       reason: handle?.reason,
     };
   }
-  if (owner && connected && owner.toLowerCase() === connected.toLowerCase()) {
-    return { status: 'owned', canClaim: false, canRelease: true, owner };
+  if (actualOwner && connected && actualOwner.toLowerCase() === connected.toLowerCase()) {
+    return { status: 'owned', canClaim: false, canRelease: supportsRelease, owner: actualOwner };
   }
   // A taken handle is a fact about the chain, not about the visitor: show it without a wallet.
-  if (owner) {
-    return { status: 'taken', canClaim: false, canRelease: false, owner, reason: REFUSALS.Unavailable };
+  if (actualOwner) {
+    return { status: 'taken', canClaim: false, canRelease: false, owner: actualOwner, reason: REFUSALS.Unavailable };
   }
   if (!connected) {
     return { status: 'needs-wallet', canClaim: false, canRelease: false, reason: 'connect a wallet to sign' };

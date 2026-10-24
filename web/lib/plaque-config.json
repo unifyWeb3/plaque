@@ -1,0 +1,48 @@
+{
+  "name": "Plaque",
+  "chainId": 420420777,
+  "chainIdHex": "0x190f1ca9",
+  "rpc": "https://test-evm-rpc-v3.portaldot.dev",
+  "explorer": "https://node-console.portaldot.dev",
+  "contract": "0x5432e6b89dc3042d47f2be98e971cad9dabab685",
+  "contractSource": "contracts/PlaqueLite.sol",
+  "deployTx": "0xcee4d1db6c86250faa16bd67419168c7628c8a88533bf3d84316ccfd0c3bb63a",
+  "deployBlock": 167044,
+  "claimTx": "0xa654bd9ce55b389c072b00d0c4af55ab067d76acc422d5636b0c62863786edf2",
+  "claimBlock": 167209,
+  "handle": "unify",
+  "handleKey": "0x756e696679000000000000000000000000000000000000000000000000000000",
+  "claimant": "0xd35404A86f825741BA8a65a31Eb8ca1D52315Fe6",
+  "sponsor": "0x064e2C32bb460Ea16A3C44A47fD9BE95CAbD4fD5",
+  "deployer": "0xfbDf159DcA07f0ae4F47da633B468e512f297E25",
+  "eventSignature": "Claimed(bytes32,address,address)",
+  "eventTopic": "0x8428df912f4f2125b442b488df9c7260cb607246895bcd29f262ecca090b1538",
+  "storageSlot": "0x56d47f50d2cfc36c2cba3ed1e61a8418df6c3a2e09f96e577d576a1c6c3b8cbf",
+  "bytecode": {
+    "PlaqueLite": {
+      "bytes": 302,
+      "keccak": "0x8a952eb82ff4a318b515cbface69a28c0f5dbbdab725d26220612a2dde6e3986"
+    },
+    "Plaque": {
+      "bytes": 786,
+      "keccak": "0xce34126d8ac9c9a0c3d50c88fc72a52206a6763530cb55184e810ae9073472ae"
+    },
+    "PlaqueV2": {
+      "bytes": 741,
+      "keccak": "0xbf079c2d2165bfc13eed9d75aae49ed1fcd367708e1438d134624bec6c820bca"
+    },
+    "Gate": {
+      "bytes": 214,
+      "keccak": "0x2bd5f237864ce18ddea620f6bdfeffb0cb8956c0b69d24ac0d507232d6c967d3"
+    }
+  },
+  "measured": {
+    "claimGasUsed": 117560751145021,
+    "claimGasPriceWei": 32915,
+    "claimCostWei": "3869512123938366215",
+    "deployGasUsed": 1114774206357087,
+    "deployGasPriceWei": 32930,
+    "deployCostWei": "36709514615338874910",
+    "claimComputationWei": "28000000000000000"
+  }
+}

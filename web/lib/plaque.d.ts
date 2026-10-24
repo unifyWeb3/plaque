@@ -55,6 +55,7 @@ export declare function deriveHandleState(state: {
   handle: PlaqueHandle;
   now?: number;
   validUntil?: number;
+  supportsRelease?: boolean;
 }): HandleState;
 export declare function weiToPot(wei: bigint | string | number): string;
 

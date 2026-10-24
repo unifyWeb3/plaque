@@ -137,6 +137,7 @@ input[type='text']::placeholder { color: var(--ink-faint); }
 .state-taken .dot { background: var(--rose); }
 .state-owned .dot { background: var(--amber); }
 .state-needs-wallet .dot, .state-expired .dot { background: var(--ink-faint); }
+.state-loading .dot { background: var(--amber); }
 
 .entries { display: flex; flex-direction: column; gap: 0.6rem; }
 .entry { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--panel); padding: 0.85rem 1rem; }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildClaimDigestV2,
   deriveHandleState,
@@ -10,12 +10,13 @@ import {
   type HandleState,
   type PlaqueHandle,
 } from '../../lib/plaque';
+import config from '../../lib/plaque-config.json';
 
-const CHAIN_ID = 420420777;
-// The live registry (PlaqueLite, block 167044). Read-side constants live in lib/chain.ts; this
-// one is the same public value, needed in the browser to build the signed claim.
-const CONTRACT = process.env.NEXT_PUBLIC_PLAQUE_CONTRACT ?? '0x5432e6b89dc3042d47f2be98e971cad9dabab685';
-const EXPLORER = 'https://node-console.portaldot.dev';
+const CHAIN_ID = config.chainId;
+// The live registry (PlaqueLite, block 167044). The address comes from the one public config
+// file; the environment variable is only an override for a different deployment.
+const CONTRACT = process.env.NEXT_PUBLIC_PLAQUE_CONTRACT ?? config.contract;
+const EXPLORER = config.explorer;
 const SPONSOR_URL = process.env.NEXT_PUBLIC_SPONSOR_URL ?? '';
 
 type RegistryEvent = {
@@ -65,39 +66,52 @@ function hexToBytes(hex: string): Uint8Array {
 
 export default function Dashboard() {
   const [registry, setRegistry] = useState<Registry | null>(null);
+  const [owner, setOwner] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [wallet, setWallet] = useState<WalletState>({ address: null, error: null });
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string; hash?: string } | null>(null);
+  const [signedPayload, setSignedPayload] = useState<string | null>(null);
+  const requestSeq = useRef(0);
 
   const handle: PlaqueHandle = useMemo(() => normalizeHandle(input), [input]);
-  const owner = registry?.owner ?? null;
   const state: HandleState = useMemo(
     () => deriveHandleState({ owner, connected: wallet.address, handle }),
     [owner, wallet.address, handle],
   );
 
   const load = useCallback(async () => {
+    const requestId = ++requestSeq.current;
     setLoading(true);
     setError(null);
+    setOwner(null);
     try {
       const key = handle.ok ? handle.key! : null;
       const url = key ? `/api/registry?handle=${key}` : '/api/registry';
       const res = await fetch(url, { cache: 'no-store' });
       const json = (await res.json()) as Registry;
+      if (requestId !== requestSeq.current) return;
       if (!json.ok) throw new Error(json.error ?? 'the node did not answer');
       setRegistry(json);
+      setOwner(json.owner ?? null);
     } catch (e) {
+      if (requestId !== requestSeq.current) return;
       setError(e instanceof Error ? e.message : 'the node did not answer');
     } finally {
-      setLoading(false);
+      if (requestId === requestSeq.current) setLoading(false);
     }
   }, [handle.ok, handle.key]);
 
   useEffect(() => {
-    void load();
+    // Clear the previous owner immediately: the new handle is unknown until its own read returns.
+    // The sequence bump invalidates any in-flight request before the debounce fires.
+    requestSeq.current += 1;
+    setOwner(null);
+    setLoading(true);
+    const timer = setTimeout(() => void load(), 250);
+    return () => clearTimeout(timer);
   }, [load]);
 
   const connect = useCallback(async () => {
@@ -110,6 +124,14 @@ export default function Dashboard() {
       const accounts = (await window.ethereum.request({ method: 'eth_requestAccounts' })) as string[];
       const address = accounts?.[0] ?? null;
       if (!address) throw new Error('the wallet returned no account');
+      const chain = (await window.ethereum.request({ method: 'eth_chainId' })) as string;
+      if (Number.parseInt(chain, 16) !== CHAIN_ID) {
+        setWallet({
+          address: null,
+          error: `This dashboard is pinned to chain ${CHAIN_ID}; switch your wallet to that network.`,
+        });
+        return;
+      }
       setWallet({ address, error: null });
     } catch (e) {
       setWallet({ address: null, error: e instanceof Error ? e.message : 'the wallet refused' });
@@ -117,10 +139,15 @@ export default function Dashboard() {
   }, []);
 
   const signAndSend = useCallback(async () => {
-    if (!handle.ok || !wallet.address) return;
+    if (!handle.ok || !wallet.address || !state.canClaim || loading) return;
     setBusy(true);
     setResult(null);
+    setSignedPayload(null);
     try {
+      const chain = (await window.ethereum!.request({ method: 'eth_chainId' })) as string;
+      if (Number.parseInt(chain, 16) !== CHAIN_ID) {
+        throw new Error(`Switch your wallet to chain ${CHAIN_ID} before signing.`);
+      }
       const digest = buildClaimDigestV2({
         handle: handle.key!,
         who: wallet.address,
@@ -154,20 +181,22 @@ export default function Dashboard() {
         setResult({ ok: true, message: 'The sponsor submitted your claim.', hash: json.hash });
         void load();
       } else {
+        const json = JSON.stringify(payload, null, 2);
+        setSignedPayload(json);
         setResult({
           ok: true,
           message:
-            'Signed. No sponsor is configured for this deployment, so copy the payload below and ' +
-            'hand it to a sponsor (or submit it yourself from an account that holds tPOT).',
+            'Signed. No sponsor is configured for this deployment, so the signed payload is below. ' +
+            'Hand it to a sponsor, or submit it yourself from an account that holds tPOT.',
         });
-        await navigator.clipboard?.writeText(JSON.stringify(payload, null, 2)).catch(() => {});
+        await navigator.clipboard?.writeText(json).catch(() => {});
       }
     } catch (e) {
       setResult({ ok: false, message: e instanceof Error ? e.message : 'the wallet refused' });
     } finally {
       setBusy(false);
     }
-  }, [handle, wallet.address, load]);
+  }, [handle, wallet.address, state.canClaim, loading, load]);
 
   const events = registry?.events ?? [];
   const claims = events.filter((e) => e.kind === 'claimed');
@@ -179,7 +208,9 @@ export default function Dashboard() {
         <h1 style={{ fontSize: 'clamp(1.9rem, 4vw, 2.6rem)' }}>Claim a handle</h1>
         <p className="lede" style={{ maxWidth: '62ch' }}>
           A handle is a 32-byte key &mdash; your name, zero-padded &mdash; bound to the address
-          that signed for it. The sponsor pays the gas; you pay nothing.
+          that signed for it. {SPONSOR_URL
+            ? 'A sponsor submits the signed claim and pays the gas; you pay nothing.'
+            : 'This deployment has no hosted sponsor: signing produces the exact claim, and a sponsor (or your own funded wallet) submits it.'}
         </p>
       </section>
 
@@ -210,10 +241,17 @@ export default function Dashboard() {
               </div>
 
               <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
-                <span className={`state-pill state-${state.status}`}>
-                  <span className="dot" aria-hidden="true" />
-                  {state.status}
-                </span>
+                {loading ? (
+                  <span className="state-pill state-loading">
+                    <span className="dot" aria-hidden="true" />
+                    checking…
+                  </span>
+                ) : (
+                  <span className={`state-pill state-${state.status}`}>
+                    <span className="dot" aria-hidden="true" />
+                    {state.status}
+                  </span>
+                )}
                 {state.owner && state.owner !== ZERO ? (
                   <span className="faint mono" style={{ fontSize: '0.82rem' }}>
                     owner {short(state.owner)}
@@ -236,11 +274,16 @@ export default function Dashboard() {
                 <button
                   className="btn btn-primary"
                   onClick={signAndSend}
-                  disabled={!state.canClaim || busy || !wallet.address}
+                  disabled={!state.canClaim || busy || !wallet.address || loading}
                 >
                   {busy ? <span className="spinner" aria-hidden="true" /> : null}
-                  {busy ? 'Signing…' : 'Sign and claim'}
+                  {busy ? 'Signing…' : SPONSOR_URL ? 'Sign and send to sponsor' : 'Sign claim'}
                 </button>
+                {!SPONSOR_URL ? (
+                  <span className="faint" style={{ alignSelf: 'center', fontSize: '0.88rem' }}>
+                    No sponsor is configured, so this button signs only; it does not send a transaction.
+                  </span>
+                ) : null}
                 {!state.canClaim && state.status === 'taken' ? (
                   <span className="faint" style={{ alignSelf: 'center', fontSize: '0.88rem' }}>
                     The contract refuses a handle that already has an owner.
@@ -269,6 +312,22 @@ export default function Dashboard() {
                     </>
                   ) : null}
                 </p>
+              ) : null}
+              {signedPayload ? (
+                <pre
+                  aria-label="signed claim payload"
+                  style={{
+                    marginTop: '0.8rem',
+                    maxHeight: 220,
+                    overflow: 'auto',
+                    padding: '0.8rem',
+                    fontSize: '0.72rem',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {signedPayload}
+                </pre>
               ) : null}
             </div>
 

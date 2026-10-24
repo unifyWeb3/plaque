@@ -354,6 +354,12 @@ test('the UI state function agrees with the contract', async () => {
   assert.equal(st.status, 'available');
   assert.equal(st.canClaim, true);
 
+  // the chain returns the zero address for an empty slot: that is still a free handle, not a
+  // taken one (the dashboard bug found in state/AUDIT-BASELINE.md)
+  st = deriveHandleState({ owner: '0x' + '0'.repeat(40), connected: claimant.address, handle });
+  assert.equal(st.status, 'available');
+  assert.equal(st.canClaim, true);
+
   // after a claim by someone else the UI must refuse to offer a claim
   const sig = await signClaim(other, { handle: key, contract });
   await (await contract.connect(sponsor).claim(key, other.address, sig.v, sig.r, sig.s, sig.validUntil)).wait();
@@ -369,11 +375,13 @@ test('the UI state function agrees with the contract', async () => {
   assert.equal(st.canClaim, false);
   assert.equal(st.owner, owner);
 
-  // the owner can release
-  st = deriveHandleState({ owner, connected: owner, handle });
+  // the owner can release on the readable build, but not on PlaqueLite (which has no release)
+  st = deriveHandleState({ owner, connected: owner, handle, supportsRelease: true });
   assert.equal(st.status, 'owned');
   assert.equal(st.canRelease, true);
   assert.equal(st.canClaim, false);
+  st = deriveHandleState({ owner, connected: owner, handle });
+  assert.equal(st.canRelease, false, 'the deployed lite build has no release function');
 
   // an invalid handle is refused client-side
   st = deriveHandleState({ owner: null, connected: claimant.address, handle: normalizeHandle('A!') });
