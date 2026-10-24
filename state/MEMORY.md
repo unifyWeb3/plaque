@@ -3,7 +3,7 @@
 Project log: findings, evidence, decisions, open items. The machine-readable source for public
 chain parameters is `config/plaque.json`; the consistency test fails if a copy drifts.
 All times UTC. "VERIFIED" = observed directly. "UNRESOLVED" = not yet confirmed.
-Last updated **2026-10-24 09:56Z** (hostile audit).
+Last updated **2026-10-24 10:38Z** (hostile audit).
 
 ---
 
@@ -24,7 +24,7 @@ Last updated **2026-10-24 09:56Z** (hostile audit).
 | DoraHacks form field limits | **UNRESOLVED** — not published; every copy block is written short | UNRESOLVED |
 
 **Track:** 4 Ecosystem DApps (the sponsored-write rail underneath is track-1 middleware).
-**Time remaining at 2026-10-24 09:56Z:** final deadline **≈12.8 days**; check-in **≈2.1 hours**.
+**Time remaining at 2026-10-24 10:38Z:** final deadline **≈12.7 days**; check-in **≈1.4 hours**.
 
 ## 2. The Portaldot V3 testnet (all VERIFIED)
 
@@ -171,7 +171,7 @@ server-side. SDK: `web/lib/plaque.js` (`buildClaimDigest` v1, `buildClaimDigestV
 
 | What | URL / value |
 |---|---|
-| Repository | **https://github.com/unifyWeb3/plaque** — public, `main`, 16 commits at baseline + the audit commits, all inside Oct 14 – Nov 6 |
+| Repository | **https://github.com/unifyWeb3/plaque** — public, `main`, 16 commits at baseline + 6 audit commits, all inside Oct 14 – Nov 6 |
 | Frontend | **https://plaque-oxunify.vercel.app** — public (deployment protection deliberately off) |
 | Vercel project | `plaque` (`prj_1iXdgZBbnkDn67Mgcsrcp2aj92Nk`, scope `oxunify`) |
 | Explorer | https://node-console.portaldot.dev |
@@ -225,4 +225,6 @@ tx, the `Claimed` event for `unify`, and `handles: 1`.
 | A12 | Mirror the public config inside `web/lib/plaque-config.json` | Vercel's project root is `web`; files above it are not uploaded. The mirror is byte-identical and `tests/consistency.test.mjs` fails on drift. |
 | A13 | Clean-clone workaround: root `npm install` (not `npm ci`) and web `npm ci` | Root lockfile drift is a real finding; web lockfile is in sync and Vercel uses it. |
 | A14 | The demo video is a human blocker | The event requires it; no video exists. The deck and `submission/DEMO-SCRIPT.md` are ready, but the recording is not. |
-| A15 | Deploy the existing Vercel project once after the push, only if the app build is green | The hosted app was stale and showed the free-handle bug; the local production build and QA now pass. No contract redeploy. |
+| A15 | Deploy the existing Vercel project once after the push, only if the app build is green | The hosted app was stale and showed the free-handle bug. Local production build and QA passed; `vercel build --prod` then `vercel deploy --prebuilt --prod` produced `dpl_AQv46Teudz3iweHGs58qVWe4fumd` (Ready, alias `plaque-oxunify.vercel.app`). No contract redeploy. |
+| A16 | Record the Vercel Git-integration root mismatch as a manual action | The project Root Directory is `.`; the push at 10:19Z triggered a failed Git build (`dpl_412h...`). The manual CLI deploy from `web` is the working path. Set Root Directory to `web` before future Git pushes. |
+| A17 | Public clone re-run is the final reproducibility proof | `https://github.com/unifyWeb3/plaque.git` at `f3eefa0`, 10:34Z: compile, 33/33 tests, and 10/10 verifier checks passed without secrets. |
