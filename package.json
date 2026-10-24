@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Plaque - a sponsored handle registry for the Portaldot V3 testnet",
+  "description": "Plaque - a sponsored-write reference implementation for the Portaldot V3 testnet",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "compile": "node scripts/compile.mjs contracts/Plaque.sol contracts/PlaqueV2.sol contracts/PlaqueLite.sol contracts/Gate.sol",
-    "test": "node --test tests/plaque.test.mjs tests/plaque-lite.test.mjs tests/relayer.test.mjs tests/consistency.test.mjs",
+    "test": "node --test tests/plaque.test.mjs tests/plaque-lite.test.mjs tests/relayer.test.mjs tests/relayer-policy.test.mjs tests/consistency.test.mjs",
     "relayer": "node scripts/relayer.mjs",
     "deploy": "node scripts/deploy-any.mjs",
     "sweep": "bash scripts/security-sweep.sh",
@@ -18,7 +18,8 @@
     "web:qa": "cd web && node scripts/qa-browser.mjs http://127.0.0.1:3000",
     "demo": "node scripts/demo-local.mjs",
     "verify:live": "node scripts/verify-live.mjs",
-    "claim": "node scripts/claim-plaque-lite.mjs"
+    "claim": "node scripts/claim-plaque-lite.mjs",
+    "probe:zero": "node scripts/probe-zero-key.mjs"
   },
   "dependencies": {
     "@polkadot/api": "16.4.6",

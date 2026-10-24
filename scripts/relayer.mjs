@@ -17,6 +17,7 @@ import * as rpc from './rpc-lib.mjs';
 import config from '../config/plaque.json' with { type: 'json' };
 import { buildClaimDigest, buildClaimDigestV2, encodeLiteClaim } from '../web/lib/plaque.js';
 import { claimGasLimit, validateLiteClaim } from './relayer-lib.mjs';
+import { createSponsorPolicy, loadPolicyConfig } from './relayer-policy.mjs';
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf('--' + name);
@@ -31,6 +32,8 @@ const CONTRACT = process.env.PLAQUE_CONTRACT ?? config.contract;
 const ALLOWED_ORIGINS = (process.env.PLAQUE_SPONSOR_ORIGINS ??
   'http://127.0.0.1:3000,http://localhost:3000').split(',').map((s) => s.trim()).filter(Boolean);
 const MAX_PENDING = 4;
+const POLICY_PATH = arg('policy', process.env.PLAQUE_POLICY ?? 'config/relayer-policy.json');
+const policy = createSponsorPolicy({ config: loadPolicyConfig(POLICY_PATH) });
 
 if (!existsSync(KEY_PATH)) {
   console.error(`No sponsor key at ${KEY_PATH}. Create one with:`);
@@ -69,6 +72,9 @@ console.log(`  contract       : ${CONTRACT}`);
 console.log(`  sponsor        : ${sponsor.address}`);
 console.log(`  balance        : ${startBalance.toString()} wei`);
 console.log(`  gas price      : ${gp.toString()} wei`);
+console.log(`  policy         : ip ${policy.config.perIp.max}/${policy.config.perIp.windowMs}ms, ` +
+  `owner ${policy.config.perOwner.max}/${policy.config.perOwner.windowMs}ms, ` +
+  `global ${policy.config.global.maxClaims} claims / ${policy.config.global.maxSpendWei} wei`);
 console.log(`  listening on   : http://127.0.0.1:${PORT}/claim\n`);
 
 /** Serialize submissions so two requests cannot race on the same sponsor nonce. */
@@ -79,7 +85,7 @@ const enqueue = (fn) => {
   return p;
 };
 
-async function submit(claim) {
+async function submit(claim, policy) {
   let data;
   if (!hasClaimAbi) {
     ({ data } = validateLiteClaim(claim, { chainId: CHAIN_ID, contract: CONTRACT }));
@@ -98,7 +104,16 @@ async function submit(claim) {
       ? buildClaimDigest({ handle, who, chainId: CHAIN_ID, contract: CONTRACT, validUntil })
       : buildClaimDigestV2({ handle, who, chainId: CHAIN_ID, contract: CONTRACT });
     const signature = `0x${r.slice(2)}${s.slice(2)}${v.toString(16).padStart(2, '0')}`;
-    if (verifyMessage(getBytes(digest), signature).toLowerCase() !== who.toLowerCase()) {
+    let recovered;
+    try {
+      recovered = verifyMessage(getBytes(digest), signature);
+    } catch {
+      throw new Error('invalid signature');
+    }
+    if (recovered.toLowerCase() === '0x0000000000000000000000000000000000000000') {
+      throw new Error('signature recovered the zero address');
+    }
+    if (recovered.toLowerCase() !== who.toLowerCase()) {
       throw new Error('signature does not match who');
     }
     data = iface.encodeFunctionData('claim', takesValidUntil
@@ -114,19 +129,31 @@ async function submit(claim) {
 
   const gasPrice = BigInt(await rpc.rpc('eth_gasPrice'));
   const balance = await rpc.getBalance(sponsor.address);
-  const gasLimit = claimGasLimit({ gasPrice, balance });
-  const nonce = await rpc.getNonce(sponsor.address);
-  const raw = await sponsor.signTransaction({
-    type: 2, chainId: CHAIN_ID, nonce,
-    to: CONTRACT,
-    value: 0n, data,
-    gasLimit, maxFeePerGas: gasPrice, maxPriorityFeePerGas: 0n,
-  });
-  const hash = await rpc.rpc('eth_sendRawTransaction', [raw], { retries: 0 });
-  const rec = await rpc.waitForReceipt(hash, { timeoutMs: 180000, intervalMs: 3000 });
-  const status = parseInt(rec.status, 16) === 1 ? 'success' : 'reverted';
-  console.log(`  submitted ${hash} -> ${status} (block ${parseInt(rec.blockNumber, 16)})`);
-  return { ok: status === 'success', hash, status, block: parseInt(rec.blockNumber, 16) };
+  const gasLimit = claimGasLimit({ gasPrice, balance, reserveWei: policy.config.minBalanceWei });
+  const reservation = policy.reserve({ costWei: gasLimit * gasPrice, balanceWei: balance });
+  if (!reservation.ok) {
+    const e = new Error(reservation.reason);
+    e.statusCode = 429;
+    throw e;
+  }
+  try {
+    const nonce = await rpc.getNonce(sponsor.address);
+    const raw = await sponsor.signTransaction({
+      type: 2, chainId: CHAIN_ID, nonce,
+      to: CONTRACT,
+      value: 0n, data,
+      gasLimit, maxFeePerGas: gasPrice, maxPriorityFeePerGas: 0n,
+    });
+    const hash = await rpc.rpc('eth_sendRawTransaction', [raw], { retries: 0 });
+    const rec = await rpc.waitForReceipt(hash, { timeoutMs: 180000, intervalMs: 3000 });
+    const status = parseInt(rec.status, 16) === 1 ? 'success' : 'reverted';
+    policy.commit(reservation);
+    console.log(`  submitted ${hash} -> ${status} (block ${parseInt(rec.blockNumber, 16)})`);
+    return { ok: status === 'success', hash, status, block: parseInt(rec.blockNumber, 16) };
+  } catch (e) {
+    policy.release(reservation);
+    throw e;
+  }
 }
 
 let pending = 0;
@@ -157,13 +184,23 @@ const server = createServer((req, res) => {
   req.on('end', async () => {
     try {
       const claim = JSON.parse(body || '{}');
-      const out = await enqueue(() => submit(claim));
+      const admitted = policy.admit({
+        ip: req.socket.remoteAddress ?? 'unknown',
+        origin: origin ?? 'cli',
+        owner: claim?.who ?? 'unknown',
+      });
+      if (!admitted.ok) {
+        res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': String(Math.ceil((admitted.retryAfterMs ?? 1000) / 1000)) });
+        res.end(JSON.stringify({ ok: false, error: admitted.reason, retryAfterMs: admitted.retryAfterMs }));
+        return;
+      }
+      const out = await enqueue(() => submit(claim, policy));
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(out));
     } catch (e) {
       const message = e instanceof Error ? e.message : 'unknown error';
       console.log('  rejected:', message);
-      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.writeHead(e?.statusCode ?? 400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: message }));
     } finally {
       pending -= 1;

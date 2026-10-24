@@ -27,21 +27,30 @@ export function validateLiteClaim(claim, { chainId, contract }) {
 
   const digest = buildClaimDigestV2({ handle, who, chainId, contract });
   const signature = `0x${r.slice(2)}${s.slice(2)}${v.toString(16).padStart(2, '0')}`;
-  const recovered = verifyMessage(getBytes(digest), signature);
+  let recovered;
+  try {
+    recovered = verifyMessage(getBytes(digest), signature);
+  } catch {
+    throw new Error('invalid signature');
+  }
+  if (!isAddress(recovered) || recovered.toLowerCase() === '0x0000000000000000000000000000000000000000') {
+    throw new Error('signature recovered the zero address');
+  }
   if (recovered.toLowerCase() !== who.toLowerCase()) throw new Error('signature does not match who');
 
   return { data: encodeLiteClaim({ key: handle, who, v, r, s }), digest };
 }
 
 /** Fixed gas limit sized for the measured storage deposit; never the whole sponsor balance. */
-export function claimGasLimit({ gasPrice, balance }) {
+export function claimGasLimit({ gasPrice, balance, reserveWei = 0n }) {
   const gp = BigInt(gasPrice);
   const bal = BigInt(balance);
+  const reserve = BigInt(reserveWei);
   if (CLAIM_GAS_LIMIT * gp < CLAIM_DEPOSIT_NEED) {
     throw new Error('gas price too low for the measured storage deposit');
   }
-  if (bal < CLAIM_GAS_LIMIT * gp) {
-    throw new Error(`the sponsor holds ${bal} wei; one claim needs ~${CLAIM_GAS_LIMIT * gp} wei`);
+  if (bal < CLAIM_GAS_LIMIT * gp + reserve) {
+    throw new Error(`the sponsor holds ${bal} wei; one claim needs ~${CLAIM_GAS_LIMIT * gp + reserve} wei including the reserve`);
   }
   return CLAIM_GAS_LIMIT;
 }

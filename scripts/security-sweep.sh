@@ -56,7 +56,8 @@ fi
 echo "== 5. no third-party handles or repository identifiers in the tracked tree =="
 # General rule: every github.com/<user> or x.com/<user> in the tracked tree must be this
 # project's own identity. The researched profiles and projects are deliberately not named.
-handles=$(git grep -hoE '(github\.com|x\.com|twitter\.com)/[A-Za-z0-9_.-]+' -- . 2>/dev/null \
+handles=$(git grep -hoE '(github\.com|x\.com|twitter\.com)/[A-Za-z0-9_.-]+' -- . \
+  ':(exclude)package-lock.json' ':(exclude)web/package-lock.json' 2>/dev/null \
   | sed -E 's#^(github\.com|x\.com|twitter\.com)/##' | sort -u \
   | grep -vE '^(unifyWeb3|oxunify|unify)$' \
   | grep -vE '^(features|about|pricing|docs|sponsors)$')

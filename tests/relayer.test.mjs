@@ -56,6 +56,9 @@ test('forged, cross-chain, zero and non-canonical claims are refused', async () 
   assert.throws(() => validateLiteClaim({ ...good, handle: handleKey('Relayer-Bad') }, { chainId: CHAIN, contract: CONTRACT }), /not canonical/);
   assert.throws(() => validateLiteClaim({ ...good, v: 29 }, { chainId: CHAIN, contract: CONTRACT }), /bad v/);
   assert.throws(() => validateLiteClaim({ ...good, s: '0x12' }, { chainId: CHAIN, contract: CONTRACT }), /bad s/);
+  assert.throws(() => validateLiteClaim({ ...good, r: '0x' + 'ab'.repeat(32) }, { chainId: CHAIN, contract: CONTRACT }), /invalid signature|does not match/);
+  assert.throws(() => validateLiteClaim({ ...good, v: 27, r: '0x' + '0'.repeat(64), s: '0x' + '0'.repeat(64) }, { chainId: CHAIN, contract: CONTRACT }), /invalid signature|zero address|does not match/);
+  assert.throws(() => validateLiteClaim({ ...good, who: '0x' + '0'.repeat(40) }, { chainId: CHAIN, contract: CONTRACT }), /zero address/);
 });
 
 test('the gas limit is fixed and refuses a sponsor that cannot cover the deposit', () => {

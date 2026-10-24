@@ -27,6 +27,8 @@ try {
 
 import { BrowserProvider, ContractFactory, Wallet, Interface, getBytes, keccak256, concat, zeroPadValue } from 'ethers';
 import { buildClaimDigestV2, handleKey, handleNameFromKey } from '../web/lib/plaque.js';
+import { validateLiteClaim, claimGasLimit } from '../scripts/relayer-lib.mjs';
+import { createSponsorPolicy } from '../scripts/relayer-policy.mjs';
 
 const lite = JSON.parse(readFileSync(new URL('../build/PlaqueLite.json', import.meta.url), 'utf8'));
 const v2 = JSON.parse(readFileSync(new URL('../build/PlaqueV2.json', import.meta.url), 'utf8'));
@@ -251,4 +253,46 @@ test('known limitation: the lite contract accepts any 32-byte key, including the
     to: c.target, data: liteCalldata({ key: zeroKey, who: claimant.address, ...sig }),
   })).wait();
   assert.equal(await storageOwner(c.target, zeroKey), claimant.address.toLowerCase());
+});
+
+
+test('the sponsor kit validates off-chain, then writes through a local simulated chain', async () => {
+  const c = await deploy(lite, await freshWallet());
+  const claimant = await freshWallet();
+  const sponsor = await freshWallet();
+  await provider.send('eth_sendTransaction', [
+    { from: funder, to: sponsor.address, value: '0x' + (9n * 10n ** 18n).toString(16) },
+  ]);
+  const key = handleKey('kit-local');
+  const sig = await signFor(claimant, c.target, key);
+  const claim = { handle: key, who: claimant.address, ...sig };
+
+  // Positive control: the same validation the relayer uses returns calldata for a valid claim.
+  const { data } = validateLiteClaim(claim, { chainId: PORTALDOT_CHAIN_ID, contract: c.target });
+  const policy = createSponsorPolicy({
+    config: {
+      perIp: { max: 1, windowMs: 60_000 }, perOrigin: { max: 1, windowMs: 60_000 },
+      perOwner: { max: 1, windowMs: 60_000 },
+      global: { maxClaims: 10, maxSpendWei: 10n ** 24n, windowMs: 60_000 }, minBalanceWei: 0n,
+    },
+    now: () => 1_000,
+  });
+  assert.equal(policy.admit({ ip: '127.0.0.1', origin: 'local', owner: claimant.address }).ok, true);
+  // The live relayer uses this fixed gas limit. Ganache's gas price is higher than Portaldot's,
+  // so the local write below uses the chain's estimate; the policy formula is exercised separately.
+  const gasPrice = 32_350n;
+  const balance = 10n ** 19n;
+  const gasLimit = claimGasLimit({ gasPrice, balance });
+  assert.equal(gasLimit, 130_000_000_000_000n);
+  const reserved = policy.reserve({ costWei: gasLimit * gasPrice, balanceWei: balance });
+  assert.equal(reserved.ok, true);
+
+  await (await sponsor.sendTransaction({ to: c.target, data })).wait();
+  assert.equal(await storageOwner(c.target, key), claimant.address.toLowerCase());
+  policy.commit(reserved.token);
+
+  // Refusals happen before a transaction: a duplicate owner admission, a bad signature, a zero key.
+  assert.equal(policy.admit({ ip: '127.0.0.1', origin: 'local', owner: claimant.address }).ok, false);
+  assert.throws(() => validateLiteClaim({ ...claim, r: '0x' + 'ab'.repeat(32) }, { chainId: PORTALDOT_CHAIN_ID, contract: c.target }), /invalid signature|does not match/);
+  assert.throws(() => validateLiteClaim({ ...claim, handle: '0x' + '0'.repeat(64) }, { chainId: PORTALDOT_CHAIN_ID, contract: c.target }), /not displayable|empty handle/);
 });
