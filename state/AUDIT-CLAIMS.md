@@ -29,7 +29,7 @@ means the check has not been run. No claim is marked PASS from a README statemen
 | 21 | `npm run lint` is configured | **FAIL** | It prompts for ESLint config and exits 1; documented, not used by CI. |
 | 22 | `AGENTS.md` exists | **FAIL** | No `AGENTS.md` anywhere in the repo. Not required by the event. |
 | 23 | No secrets in tracked files or any ref | **PASS** | `npm run sweep` 09:34Z; all-ref `git grep` for private-key/token patterns returned 0 files; no tracked `secrets/`. |
-| 24 | At least 3 commits in the Oct 14 – Nov 6 window; core not all in the final 24 h | **PASS** | 22 commits, 2026-10-21 00:40Z → 2026-10-24 10:45Z; all inside the window; core contracts/tests committed Oct 21. |
+| 24 | At least 3 commits in the Oct 14 – Nov 6 window; core not all in the final 24 h | **PASS** | 20+ commits, 2026-10-21 00:40Z → 2026-10-24 10:50Z; all inside the window; core contracts/tests committed Oct 21. |
 | 25 | Official rules re-read | **PASS** | DoraHacks detail page 08:28Z: check-in 2026-10-24 12:00Z, final 2026-11-06 04:00Z, demo video required, code window Oct 14–Nov 6, 168 hackers/28 builds. |
 | 26 | Pitch deck PDF is current | **PASS** | 9 pages, 77,578 bytes, regenerated 09:29Z; text checked against the corrected claims. |
 | 27 | Integration snippets work | **PASS** | 09:07Z: the `docs/INTEGRATION.md` read-owner snippet returned `0xd354…5fe6` and the event query returned 1 log at block 167209. |

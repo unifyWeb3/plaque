@@ -27,13 +27,13 @@ A direct, broader ENS-style `.pot` name service is already public (not named in 
 30 public claims audited in `state/AUDIT-CLAIMS.md`; 25 PASS, 5 FAIL, 0 BLOCKED, 0 NOT VERIFIED at the end. The zero-owner bug is fixed; the dashboard uses one pure state function, clears stale owner state, and shows `checking…` while reading. Loading, 502 error, pending and fail-closed config were exercised. Browser QA passed at 390×844 and 1280×900 with no overflow; the hosted app now serves the new title and correct free-handle state.
 
 ## 9. Stage 7 — rules and git
-Official page checked 08:28Z: check-in 2026-10-24 12:00Z; final 2026-11-06 04:00Z; demo video required; code window Oct 14–Nov 6; 168 hackers, 28 builds. 22 commits, 2026-10-21 00:40Z → 2026-10-24 10:45Z, author `unify <unify@oxunify.xyz>`; core contracts/tests committed Oct 21, not bulk in the final 24h.
+Official page checked 08:28Z: check-in 2026-10-24 12:00Z; final 2026-11-06 04:00Z; demo video required; code window Oct 14–Nov 6; 168 hackers, 28 builds. 20+ commits, 2026-10-21 00:40Z → 2026-10-24 10:50Z, author `unify <unify@oxunify.xyz>`; core contracts/tests committed Oct 21, not bulk in the final 24h.
 
 ## 10. Stage 8 — clean worktree
 Public clone `https://github.com/unifyWeb3/plaque.git` at `f3eefa0` (10:34Z): `npm install` exit 0, compile exit 0, 33/33 tests exit 0, `verify:live` 10/10 exit 0 at block 173512, no secrets. Local clean clone also passed web `npm ci`, typecheck, build, demo and sweep. Secret scan across tracked files and all refs returned zero private-key/token files; no `secrets/` is tracked.
 
 ## 11. Commits and deployment
-Six additive commits: `641a10c`, `a078c07`, `4ed61f2`, `fbf1a0f`, `f3eefa0`, `97c8705`; pushed `23f4067..97c8705`. Vercel manual production deploy `dpl_AQv46Teudz3iweHGs58qVWe4fumd` is Ready at `https://plaque-oxunify.vercel.app` (CLI exited 1 on a status-poll network error; `vercel inspect` confirmed Ready).
+Additive audit commits after `23f4067` (build, web, relayer, docs); pushed to `3413b5e`. Vercel manual production deploy `dpl_AQv46Teudz3iweHGs58qVWe4fumd` is Ready at `https://plaque-oxunify.vercel.app` (CLI exited 1 on a status-poll network error; `vercel inspect` confirmed Ready).
 
 ## 12. Blockers and human actions
 **Blocking:** record the required ≤3-minute demo video from `submission/DEMO-SCRIPT.md`; submit check-in before 12:00Z and final before 2026-11-06 04:00Z. **Manual:** set the Vercel project Root Directory to `web` (currently `.`; Git pushes trigger a failed build) or deploy from `web` with `vercel build --prod` + `vercel deploy --prebuilt --prod`. **Known findings:** root `npm ci` fails on lockfile drift (`npm install` works); `npm run lint` is unconfigured; no `AGENTS.md` exists.
