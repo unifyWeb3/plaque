@@ -19,11 +19,17 @@ const gp = BigInt(await rpc.rpc('eth_gasPrice'));
 const balance = await rpc.getBalance(sponsor.address);
 const codeBytes = BigInt((artifact.deployedBytecode.length - 2) / 2);
 
-// measured on this chain: a deployment costs about 2.6e12 gas units per byte of code, and the
-// gas limit must be at least that much for the storage-deposit limit to allow the deposit.
-const GAS_PER_BYTE = 2_600_000_000_000n;
-const minGas = codeBytes * GAS_PER_BYTE + 1_000_000_000_000n;
-const maxGas = (balance * 90n) / 100n / gp;
+// Measured on this chain (two deployments and the failed probes): the code deposit is
+//   deposit(wei) = 18.4 tPOT + 0.0713 tPOT per byte of deployed code,
+// and the node derives its storage-deposit limit from `gasLimit * maxFeePerGas`. So the gas
+// limit has to be large enough to cover the deposit, while the pool also requires
+// `balance >= gasLimit * maxFeePerGas`. Both constraints are applied below; the window is
+// empty when the account genuinely cannot deploy this contract.
+const TPOT = 10n ** 18n;
+const depositWei = 18_400_000_000_000_000_000n + 71_300_000_000_000_000n * codeBytes;
+const minGas = (depositWei * 102n) / 100n / gp;   // 2% above the deposit
+const maxGas = (balance * 99n) / 100n / gp;       // the pool's own balance requirement
+console.log(`  estimated code deposit: ${depositWei / TPOT} tPOT (${codeBytes} bytes)`);
 console.log(`${name}: codeBytes=${codeBytes} balance=${balance} gasPrice=${gp}`);
 console.log(`  gas window: ${minGas} .. ${maxGas}`);
 if (minGas >= maxGas) { console.log('FATAL: the balance cannot cover this deployment'); process.exit(1); }
