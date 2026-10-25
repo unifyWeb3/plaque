@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { keccak256 } from 'ethers';
 import { PORTALDOT, handleKey, keccakText } from '../web/lib/plaque.js';
 import { BUILD_CONFIG } from '../scripts/build-config.mjs';
+import { normalizePolicyConfig } from '../scripts/relayer-policy.mjs';
 import config from '../config/plaque.json' with { type: 'json' };
 import { validateConfig } from '../scripts/config-lib.mjs';
 
@@ -72,6 +73,23 @@ test('public docs name the live contract and chain id', () => {
   for (const f of ['README.md', 'submission/BUIDL.md', 'submission/EVIDENCE.md', 'submission/CHECK-IN.md', 'submission/deck.html']) {
     assert.ok(read(f).includes(String(config.chainId)), `${f} must name the chain id`);
   }
+  // The integration guide's policy block is copy-pasteable; its keys must be the keys the
+  // policy loader actually reads, not a parallel shape that silently falls back to defaults.
+  const guide = read('docs/INTEGRATE.md');
+  const block = guide.match(/## 2\. The config surface[\s\S]*?```json\n([\s\S]*?)\n```/);
+  assert.ok(block, 'docs/INTEGRATE.md must contain the policy JSON block');
+  const policy = JSON.parse(block[1]);
+  assert.deepEqual(Object.keys(policy).sort(), ['global', 'minBalanceWei', 'perIp', 'perOrigin', 'perOwner']);
+  const changed = structuredClone(policy);
+  changed.perIp.max = 1;
+  changed.perOwner.max = 1;
+  changed.global.maxClaims = 1;
+  const normalized = normalizePolicyConfig(changed);
+  assert.equal(normalized.perIp.max, 1);
+  assert.equal(normalized.perOwner.max, 1);
+  assert.equal(normalized.global.maxClaims, 1);
+  assert.equal(normalized.global.maxSpendWei, 80_000_000_000_000_000_000n);
+  assert.equal(normalized.minBalanceWei, 100_000_000_000_000_000n);
 });
 
 test('the committed build settings reproduce the documented bytecode', () => {

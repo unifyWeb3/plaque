@@ -23,42 +23,37 @@ The relayer never receives a private key. The user signs in their wallet; the re
 
 ```json
 {
-  "contract": "0x5432e6b89dc3042d47f2be98e971cad9dabab685",
-  "chainId": 420420777,
-  "rpcUrl": "https://test-evm-rpc-v3.portaldot.dev",
-  "signatureDomain": {
-    "scheme": "eip191-personal-sign",
-    "digest": "keccak256(abi.encode(bytes32(1), handle, who, chainId, contract))"
-  },
-  "gasLimit": "130000000000000",
-  "budget": {
+  "perIp": { "max": 6, "windowMs": 60000 },
+  "perOrigin": { "max": 6, "windowMs": 60000 },
+  "perOwner": { "max": 3, "windowMs": 86400000 },
+  "global": {
     "maxClaims": 20,
     "maxSpendWei": "80000000000000000000",
     "windowMs": 3600000
-  },
-  "limits": {
-    "perIp": { "max": 6, "windowMs": 60000 },
-    "perOrigin": { "max": 6, "windowMs": 60000 },
-    "perOwner": { "max": 3, "windowMs": 86400000 }
   },
   "minBalanceWei": "100000000000000000"
 }
 ```
 
-Copy `config/relayer-policy.example.json`, edit the limits, and pass it with
-`--policy config/relayer-policy.json` (or `PLAQUE_POLICY`). The reference server reads the contract
-address and chain id from `config/plaque.json`; in your own dApp, replace those two values.
+Copy `config/relayer-policy.example.json`, edit these limits, and pass it with
+`--policy config/relayer-policy.json` (or `PLAQUE_POLICY`). This file contains only the limits.
+The relayer reads the contract and chain id from `config/plaque.json` (`PLAQUE_CONTRACT` overrides
+the address); the RPC endpoint is `PORTALDOT_RPC` or the same public endpoint. The gas limit is the
+fixed `CLAIM_GAS_LIMIT` in `relayer-lib.mjs`. The reference HTTP server refuses a chain-id mismatch,
+so it is testnet-only; for a local simulated chain use the local proof in section 6.
 
 ## 3. Client: sign once, send nothing
 
 ```ts
-import { AbiCoder, getBytes, keccak256 } from 'ethers';
+import { AbiCoder, getBytes, keccak256, toUtf8Bytes, zeroPadBytes } from 'ethers';
 
 const CHAIN_ID = 420420777n;
 const CONTRACT = '0x5432e6b89dc3042d47f2be98e971cad9dabab685';
 
 export async function signSponsoredClaim(signer: any, name: string) {
-  const handle = '0x' + Buffer.from(name, 'utf8').toString('hex').padEnd(64, '0');
+  const canonical = name.trim().toLowerCase();
+  if (!/^[a-z0-9][a-z0-9._-]{2,30}$/.test(canonical)) throw new Error('invalid handle');
+  const handle = zeroPadBytes(toUtf8Bytes(canonical), 32);
   const digest = keccak256(AbiCoder.defaultAbiCoder().encode(
     ['bytes32', 'bytes32', 'address', 'uint256', 'address'],
     [1n, handle, await signer.getAddress(), CHAIN_ID, CONTRACT],
@@ -114,6 +109,10 @@ const hash = await rpc('eth_sendRawTransaction', [raw]);
 // on success policy.commit(reservation); on failure policy.release(reservation)
 ```
 
+This is the order of operations, not a complete server. The runnable implementation is
+`scripts/relayer.mjs`: it loads a `0600` sponsor key, serializes the nonce queue, and refuses a
+chain-id mismatch. It is testnet-only; for a local simulated chain use section 6.
+
 `validateLiteClaim` rejects a zero `who`, a signature that recovers the zero address, a signature
 for a different address, a non-canonical handle and the zero handle. The contract itself rejects a
 zero `who` and a mismatched signature, but **it accepts the zero handle** if validly signed; that is
@@ -136,6 +135,8 @@ function ownerOf(bytes32 handle) external view returns (address) {
 Read it without the Plaque SDK:
 
 ```ts
+import { concat, keccak256, zeroPadValue } from 'ethers';
+
 const slot = keccak256(concat([handle, zeroPadValue('0x', 32)]));
 const word = await provider.getStorage(CONTRACT, slot);
 const owner = '0x' + word.slice(-40);
