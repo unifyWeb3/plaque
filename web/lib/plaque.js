@@ -261,7 +261,7 @@ function keccakF(lanes) {
  * The one pure function that decides what the UI may offer.
  * It is a function of chain state only — never of anything the UI invented.
  *
- * @param {{owner: string|null, connected: string|null, handle: {ok: boolean, reason?: string},
+ * @param {{owner: string|null, connected: string|null, handle: {ok: boolean, key?: string, reason?: string},
  *          now?: number, validUntil?: number, supportsRelease?: boolean}} state
  * @returns {{status: string, canClaim: boolean, canRelease: boolean, reason?: string}}
  */
@@ -278,6 +278,15 @@ export function deriveHandleState(state) {
       canClaim: false,
       canRelease: false,
       reason: handle?.reason,
+    };
+  }
+  // The deployed lite contract accepts the all-zero key; the dashboard must not offer it.
+  if (/^0x0{64}$/i.test(String(handle.key ?? ''))) {
+    return {
+      status: 'invalid',
+      canClaim: false,
+      canRelease: false,
+      reason: 'the zero handle is not claimable',
     };
   }
   if (actualOwner && connected && actualOwner.toLowerCase() === connected.toLowerCase()) {

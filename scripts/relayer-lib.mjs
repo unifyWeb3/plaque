@@ -10,6 +10,8 @@ export const CLAIM_DEPOSIT_NEED = 4_000_000_000_000_000_000n; // 4 tPOT, just ab
 export function validateLiteClaim(claim, { chainId, contract }) {
   const { handle, who, v, r, s } = claim ?? {};
   if (typeof handle !== 'string' || !/^0x[0-9a-fA-F]{64}$/.test(handle)) throw new Error('bad handle');
+  // The deployed lite contract accepts the all-zero key; this rail refuses it before spending.
+  if (/^0x0{64}$/i.test(handle)) throw new Error('empty handle');
   if (typeof who !== 'string' || !isAddress(who)) throw new Error('bad address');
   if (who.toLowerCase() === '0x0000000000000000000000000000000000000000') throw new Error('zero address');
   if (!Number.isInteger(v) || v < 27 || v > 28) throw new Error('bad v');
@@ -23,7 +25,6 @@ export function validateLiteClaim(claim, { chainId, contract }) {
   const normalized = normalizeHandle(name);
   if (!normalized.ok) throw new Error(`handle is not displayable: ${normalized.reason}`);
   if (normalized.key.toLowerCase() !== handle.toLowerCase()) throw new Error('handle is not canonical');
-  if (/^0x0{64}$/.test(handle)) throw new Error('empty handle');
 
   const digest = buildClaimDigestV2({ handle, who, chainId, contract });
   const signature = `0x${r.slice(2)}${s.slice(2)}${v.toString(16).padStart(2, '0')}`;

@@ -31,8 +31,9 @@ These are properties of the deployed build, not roadmap items:
   relayer caps what one key can lose; it cannot make the key unforgeable.
 * **The registry is first-come.** A free name can be bound to any address that signs; the deposit is
   the deterrent.
-* **The contract accepts the zero handle** if validly signed (the app and relayer refuse it). The
-  zero *address* is refused. Section 5 states the exact boundary.
+* **The zero handle is the all-zero 32-byte key (the empty byte string), not a name.** The contract
+  accepts it if validly signed; the app and relayer refuse it. The zero *address* is refused.
+  Section 5 states the exact boundary.
 * **The hosted app has no sponsor key.** It reads the chain and produces the signed payload; it does
   not send a transaction. Run the relayer locally or host it yourself.
 

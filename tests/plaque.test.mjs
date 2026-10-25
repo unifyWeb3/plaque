@@ -354,6 +354,16 @@ test('the UI state function agrees with the contract', async () => {
   assert.equal(st.status, 'available');
   assert.equal(st.canClaim, true);
 
+  // positive control: a normal handle is claimable; the all-zero key (the empty byte string) is not
+  st = deriveHandleState({
+    owner: null,
+    connected: claimant.address,
+    handle: { ok: true, name: '', key: '0x' + '0'.repeat(64) },
+  });
+  assert.equal(st.status, 'invalid');
+  assert.equal(st.canClaim, false);
+  assert.match(st.reason, /zero handle/);
+
   // the chain returns the zero address for an empty slot: that is still a free handle, not a
   // taken one (the dashboard bug found in state/AUDIT-BASELINE.md)
   st = deriveHandleState({ owner: '0x' + '0'.repeat(40), connected: claimant.address, handle });

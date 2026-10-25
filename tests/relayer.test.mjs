@@ -1,7 +1,7 @@
 /** The relayer's pre-flight rules: reject before spending gas, accept only a valid signed claim. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Wallet, getBytes } from 'ethers';
+import { AbiCoder, Wallet, getBytes, keccak256 } from 'ethers';
 import { buildClaimDigestV2, handleKey, normalizeHandle } from '../web/lib/plaque.js';
 import { validateLiteClaim, claimGasLimit, CLAIM_GAS_LIMIT } from '../scripts/relayer-lib.mjs';
 
@@ -26,6 +26,13 @@ test('a valid claim is accepted and encoded as five raw words', async () => {
   const out = validateLiteClaim(claim, { chainId: CHAIN, contract: CONTRACT });
   assert.match(out.data, /^0x[0-9a-f]{320}$/);
 
+  // The integration guide's client encoding: the leading `1` is uint256, not bytes32.
+  const guideDigest = keccak256(AbiCoder.defaultAbiCoder().encode(
+    ['uint256', 'bytes32', 'address', 'uint256', 'address'],
+    [1n, claim.handle, claim.who, CHAIN, CONTRACT],
+  ));
+  assert.equal(guideDigest, buildClaimDigestV2({ handle: claim.handle, who: claim.who, chainId: CHAIN, contract: CONTRACT }));
+
   // The dashboard and the relayer share normalizeHandle; every name the UI offers is a name the
   // relayer accepts, and the formats the UI refuses are refused here too.
   for (const name of ['abc', 'a.b-c_d', 'a'.repeat(31)]) {
@@ -49,10 +56,13 @@ test('forged, cross-chain, zero and non-canonical claims are refused', async () 
   const handle = handleKey('relayer-bad');
   const good = await signed(who, handle);
 
+  // positive control: the same signer with a normal handle passes before the refusals below
+  assert.doesNotThrow(() => validateLiteClaim(good, { chainId: CHAIN, contract: CONTRACT }));
+
   assert.throws(() => validateLiteClaim({ ...good, who: Wallet.createRandom().address }, { chainId: CHAIN, contract: CONTRACT }), /signature does not match who/);
   const otherChain = await signed(who, handle, 1n);
   assert.throws(() => validateLiteClaim(otherChain, { chainId: CHAIN, contract: CONTRACT }), /signature does not match who/);
-  assert.throws(() => validateLiteClaim({ ...good, handle: '0x' + '0'.repeat(64) }, { chainId: CHAIN, contract: CONTRACT }), /not displayable|empty/);
+  assert.throws(() => validateLiteClaim({ ...good, handle: '0x' + '0'.repeat(64) }, { chainId: CHAIN, contract: CONTRACT }), /empty handle/);
   assert.throws(() => validateLiteClaim({ ...good, handle: handleKey('Relayer-Bad') }, { chainId: CHAIN, contract: CONTRACT }), /not canonical/);
   assert.throws(() => validateLiteClaim({ ...good, v: 29 }, { chainId: CHAIN, contract: CONTRACT }), /bad v/);
   assert.throws(() => validateLiteClaim({ ...good, s: '0x12' }, { chainId: CHAIN, contract: CONTRACT }), /bad s/);

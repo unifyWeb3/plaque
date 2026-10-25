@@ -42,6 +42,8 @@ the address); the RPC endpoint is `PORTALDOT_RPC` or the same public endpoint. T
 fixed `CLAIM_GAS_LIMIT` in `relayer-lib.mjs`. The reference HTTP server refuses a chain-id mismatch,
 so it is testnet-only; for a local simulated chain use the local proof in section 6.
 
+Run: `node --input-type=module -e "import { loadPolicyConfig } from './scripts/relayer-policy.mjs'; const p = loadPolicyConfig('config/relayer-policy.example.json'); console.log(p.perIp.max, p.perOwner.max, p.global.maxClaims);"`
+
 ## 3. Client: sign once, send nothing
 
 ```ts
@@ -55,7 +57,7 @@ export async function signSponsoredClaim(signer: any, name: string) {
   if (!/^[a-z0-9][a-z0-9._-]{2,30}$/.test(canonical)) throw new Error('invalid handle');
   const handle = zeroPadBytes(toUtf8Bytes(canonical), 32);
   const digest = keccak256(AbiCoder.defaultAbiCoder().encode(
-    ['bytes32', 'bytes32', 'address', 'uint256', 'address'],
+    ['uint256', 'bytes32', 'address', 'uint256', 'address'],
     [1n, handle, await signer.getAddress(), CHAIN_ID, CONTRACT],
   ));
   const signature = await signer.signMessage(getBytes(digest)); // EIP-191 personal-sign
@@ -78,6 +80,8 @@ export async function signSponsoredClaim(signer: any, name: string) {
 
 The digest binds the handle, `who`, the chain id and the contract. A signature for another name,
 address, chain or contract is refused before any gas is spent.
+
+Run: `node --test tests/relayer.test.mjs` — the same digest and signature rules.
 
 ## 4. Relayer: verify before spending
 
@@ -113,11 +117,14 @@ This is the order of operations, not a complete server. The runnable implementat
 `scripts/relayer.mjs`: it loads a `0600` sponsor key, serializes the nonce queue, and refuses a
 chain-id mismatch. It is testnet-only; for a local simulated chain use section 6.
 
+Run: `node --test tests/relayer.test.mjs tests/relayer-policy.test.mjs` — signature, budget and refusal rules.
+
 `validateLiteClaim` rejects a zero `who`, a signature that recovers the zero address, a signature
 for a different address, a non-canonical handle and the zero handle. The contract itself rejects a
 zero `who` and a mismatched signature, but **it accepts the zero handle** if validly signed; that is
 why the off-chain check is mandatory for this rail. A direct caller can still spend their own gas on
-the zero handle; nobody can make the registry release it in this 302-byte build.
+the zero handle; nobody can make the registry release it in this 302-byte build. The deployed
+contract is frozen, so this is off-chain policy, not a contract guarantee.
 
 ## 5. Contract side: the reader
 
@@ -142,6 +149,8 @@ const word = await provider.getStorage(CONTRACT, slot);
 const owner = '0x' + word.slice(-40);
 const claimed = /^0x0{40}$/i.test(owner) ? null : owner;
 ```
+
+Run: `node scripts/verify-live.mjs` — reads the live storage slot and event.
 
 The event signature hash is
 `0x8428df912f4f2125b442b488df9c7260cb607246895bcd29f262ecca090b1538`; it has four topics
