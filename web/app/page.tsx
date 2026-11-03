@@ -53,7 +53,7 @@ export default async function Home() {
         <div className="wrap hero-grid">
           <div>
             <p className="eyebrow">Portaldot Hacker House 2026 · Modular Cloud &amp; Middleware</p>
-            <h1>Make a sponsored write on Portaldot with one signature.</h1>
+            <h1>Make a sponsored write on Portaldot with one signature</h1>
             <p className="lede">
               Plaque is a reference implementation of a sponsored (gasless) write. A user with a
               zero balance signs one domain-bound message; a relayer verifies it and pays; the chain

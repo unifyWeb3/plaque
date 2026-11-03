@@ -208,10 +208,10 @@ export default function Dashboard() {
         <h1 style={{ fontSize: 'clamp(1.9rem, 4vw, 2.6rem)' }}>Claim a handle</h1>
         <p className="lede" style={{ maxWidth: '62ch' }}>
           A handle is a 32-byte key &mdash; your name, zero-padded &mdash; bound to the address
-          that signed for it. This is the reference consumer of the sponsored-write rail: you sign,
-          a relayer verifies and pays, and the chain records who claimed. {SPONSOR_URL
-            ? 'A sponsor submits the signed claim and pays the gas; you pay nothing.'
-            : 'This deployment has no hosted sponsor: signing produces the exact claim, and a sponsor (or your own funded wallet) submits it. The 302-byte build has no release or transfer, and the registry is first-come.'}
+          that signed it. You sign; a sponsor verifies and pays; the chain records who claimed.
+          {SPONSOR_URL
+            ? ' A sponsor submits the claim and pays the gas.'
+            : ' This deployment has no hosted sponsor: signing produces the exact claim for a sponsor, or your own funded wallet, to submit. The live build has no release or transfer and the registry is first-come.'}
         </p>
       </section>
 
